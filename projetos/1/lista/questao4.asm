@@ -53,7 +53,7 @@ main:
     addi $v0, $0, 11
     syscall
 
-    #strcmp example
+    #strncmp example
     la		$a0, str1		# 
     la		$a1, str2		# 
     lw		$a3, num		# 
@@ -62,6 +62,23 @@ main:
 
     addi	$a0, $v0, 0			# $t0 = $t1 + 0
     addi	$v0, $0, 1		# system call #1 - print int
+    syscall						# execute
+
+    # Print new line
+    addi	$a0, $0, 10			# $a0 = $0 + 10
+    addi $v0, $0, 11
+    syscall
+
+    #strcat example
+    #WARNING: It may overlap if your destination does not have allocated
+    #memory for concatenation, in this case, the result is undefined.
+    la		$a0, str1		# 
+    la		$a1, str2		# 
+
+    jal		strcat			# jump to strcpy and save position to $ra
+
+    addi	$a0, $v0, 0			# $t0 = $t1 + 0
+    addi	$v0, $0, 4		# system call #1 - print int
     syscall						# execute
 
     j		exit				# jump to exit
@@ -155,6 +172,29 @@ strncmp_compare_greater:
     subi	$v0, $v0, 2			# $v0 = $v0 - 2
 
 finish_strncmp:
+    jr		$ra					# jump to $ra
+
+strcat:
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    addi	$t1, $a1, 0			# $t1 = $a1 + 0
+    
+strcat_search_null_address:
+    lb		$t2, 0($t0)		# 
+    beq		$t2, $zero, strcat_loop_write_string	# if $t2 == $zero then goto strcat_write_string
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    j strcat_search_null_address
+
+strcat_loop_write_string:
+    lb		$t2, 0($t1)		# 
+    beq		$t2, $zero, strcat_finish	# if $t2 == $zero then goto strcat_finish
+    sb		$t2, 0($t0)		# 
+
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    addi	$t1, $t1, 1			# $t1 = $t1 + 1
+    j strcat_loop_write_string
+    
+strcat_finish:
+    addi	$v0, $a0, 0			# $v0 = $a0 + 0
     jr		$ra					# jump to $ra
 
 exit:
