@@ -13,23 +13,17 @@ main:
     lw		$s2, transmitter_ready	# 
     lw		$s3, transmitter_data	# 
     
-loop:
+loop_wait_for_character:
     lb		$t0, 0($s0)		# 
     bne		$t0, $zero, read_and_write_character	# if $t0 != $zero then goto read_character
-    j		loop			# jump to loop
+    j		loop_wait_for_character			# jump to loop
 
 read_and_write_character:
     lw		$t0, 0($s1)		# 
     sw		$t0, 0($s3)		#
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    addi	$t1, $t1, 1			# $t1 = $t1 + 1
 
 wait_display_to_write:
     lb		$t0, 0($s2)		# 
     beq		$t0, $zero, wait_display_to_write	# if $t0 == $zero then goto wait_display_to_write
-    j		loop				# jump to loop
+    j		loop_wait_for_character				# jump to loop
     
