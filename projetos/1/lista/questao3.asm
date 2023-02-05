@@ -1,10 +1,19 @@
 .data
-    n_esimo: .word 2
-
+    n_esimo: .asciiz "Digite um número maior que 1: "
 .text
 
 main:
-    lw		$a0, n_esimo		# 
+    
+    li $v0, 4           # print the string n_esimo
+    la $a0, n_esimo     # load its address to $a0
+    syscall
+
+    li $v0, 5           # read the integer from user to $v0
+    syscall 
+
+    addi $a0, $v0, 0    # $a0 = $v0 + 0
+    addi $v0, $0, 0     # $v0 = $0 + 0
+
     jal		fib				# jump to fib and save position to $ra
     
     addi	$a0, $v0, 0			# $a0 = $v0 + 0
