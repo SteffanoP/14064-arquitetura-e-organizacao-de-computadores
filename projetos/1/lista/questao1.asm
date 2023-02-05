@@ -52,9 +52,17 @@ not_equal:
 	sll		$t3, $0, 4			# $t1 = $t1 << 4
 	j		loop_over_string
 
-exit:		
+exit:
+
+	addi	$t0, $a0, 0			# $t0 = $a0 + 0
+
+	# Print new line
+    addi $a0, $0, 10			# $a1 = $0 + 10
+    addi $v0, $0, 11
+    syscall
+
 	addi	$v0, $0, 4		# system call #4 - print string
-	add		$a0, $a0, $zero		# $a0 = $s0 + $zero
+	addi	$a0, $t0, 0		# $a0 = $s0 + 0
 	syscall
 
 	addi	$v0, $0, 10		# System call 10 - Exit
