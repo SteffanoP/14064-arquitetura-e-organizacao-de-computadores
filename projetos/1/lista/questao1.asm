@@ -20,7 +20,7 @@
 
 start:
 	print(s)
-	# read(256)
+	
 	li $v0, 8      
 	la $a0, space
 	li $a1, 256
@@ -41,7 +41,7 @@ start:
 	add	$a0, $t0, $0 # A palavra modificada, por incrível que pareça, não é exibida ao final do programa sem essa linha...
 
 loop_over_string:
-	lb	$t3, 0($t0)  #$t3 tá sendo igual ao char desejado para substituir
+	lb	$t3, 0($t0)
 	
 	beq	$t3, $zero, exit	# if $t3 == $zero then goto exit
 	bne	$t3, $t1, not_equal	# if $t3 != $s1 then goto not_equal
