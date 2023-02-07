@@ -10,6 +10,10 @@
     transmitter_data: .word 0xffff000c
 
     cmd_exit: .asciiz "exit"
+
+    cmd_help: .asciiz "help"
+    std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
+
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
 .text
 
@@ -85,6 +89,12 @@ process_command:
     lb		$t0, 0($s0)		    # 
     beq		$t0, $zero, write_current_shell_cmd	# if $t0 == $zero then goto write_current_shell_cmd
 
+    # Command help
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_help		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, help	# if $v0 == $zero then goto exit
+
     # Command exit
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_exit		# 
@@ -101,6 +111,11 @@ write_current_shell_cmd:
     write_shell($s0)
 
     j		main				# jump to main
+
+help:
+    la		$t0, std_help		# 
+    write_shell($t0)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 exit:
     addi	$v0, $0, 10		# System call 10 - Exit
