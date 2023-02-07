@@ -1,5 +1,5 @@
 .data
-    shell_user: .asciiz "HJJS-shell>> "
+    shell_user: .asciiz "\nHJJS-shell>> "
     nl: .word 10
     bs: .word 8
     ff: .word 12
@@ -10,7 +10,7 @@
     transmitter_data: .word 0xffff000c
 
     cmd_exit: .asciiz "exit"
-    cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available.\n"
+    cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
 .text
 
 .macro write_shell (%string_address)
@@ -81,6 +81,10 @@ backspace:
 process_command:
     # Command is a ASCII String on Address $s0 and it ends with \0
 
+    # If no command is written, then go back to main
+    lb		$t0, 0($s0)		    # 
+    beq		$t0, $zero, write_current_shell_cmd	# if $t0 == $zero then goto write_current_shell_cmd
+
     # Command exit
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_exit		# 
@@ -90,6 +94,8 @@ process_command:
     # If command not found suggest typing help
     la		$t0, cmd_not_found		# 
     write_shell($t0)
+
+write_current_shell_cmd:
     la		$t0, shell_user		# 
     write_shell($t0)
     write_shell($s0)
