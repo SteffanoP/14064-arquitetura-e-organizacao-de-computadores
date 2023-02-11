@@ -3,17 +3,19 @@
     nl: .word 10
     bs: .word 8
     ff: .word 12
+    sep_args: .asciiz "-"
 
     receiver_ready: .word 0xffff0000
     receiver_data: .word 0xffff0004
     transmitter_ready: .word 0xffff0008
     transmitter_data: .word 0xffff000c
 
-    cmd_exit: .asciiz "exit"
+    cmd_ad_morador: .asciiz "ad_morador"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
 
+    cmd_exit: .asciiz "exit"
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
 .text
 
@@ -89,6 +91,12 @@ process_command:
     lb		$t0, 0($s0)		    # 
     beq		$t0, $zero, write_current_shell_cmd	# if $t0 == $zero then goto write_current_shell_cmd
 
+    # Command ad_morador
+    la		$a0, cmd_ad_morador	# 
+    addi	$a1, $s0, 0			# $a1 = $s0 + 0
+    jal		check_prefix		# jump to check_prefix and save position to $ra
+    beq		$v0, $zero, ad_morador	# if $v0 == $zero then goto ad_morador
+
     # Command help
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_help		# 
@@ -111,6 +119,9 @@ write_current_shell_cmd:
     write_shell($s0)
 
     j		main				# jump to main
+
+ad_morador:
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
     la		$t0, std_help		# 
@@ -181,4 +192,83 @@ strrm1_loop_over_string:
 strrm1_remove_last:
     subi	$t0, $t0, 1			# $t0 = $t0 - 1
     sb		$zero, 0($t0)		# 
+    jr		$ra					# jump to $ra
+
+strlen:
+    addi	$v0, $a0, 0			# $t0 = $a0 + 0
+
+strlen_loop_over_str:
+    lb		$t2, 0($v0)		# 
+    beq		$t2, $zero, strlen_finish	# if $t2 == $t1 then goto strlen_finish
+    addi	$v0, $v0, 1			# $t0 = $t0 + 1
+    j strlen_loop_over_str
+
+strlen_finish:
+    sub		$v0, $v0, $a0		# $v0 = $v0 - $a0
+    jr		$ra					# jump to $ra
+
+strncmp:
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    addi	$t1, $a1, 0			# $t1 = $a1 + 0
+    addi	$t5, $a3, 0			# $t5 = $a3 + 0
+
+    addi	$v0, $zero, 0
+
+loop_over_num_strings:
+    beq		$t5, $zero, finish_strncmp	# if $t5 == $zero then goto finish_strncmp
+
+    lb		$t3, 0($t0)		# 
+    lb		$t4, 0($t1)		# 
+    bne		$t3, $t4, strncmp_compare_greater	# if $t3 != $t4 then goto compare_greater
+    beq		$t3, $zero, finish_strncmp	# if $t3 == $zero then goto finish_strcmp
+
+    addi	$t0, $t0, 1			# $t0 = $a0 + 0
+    addi	$t1, $t1, 1			# $t1 = $a1 + 0
+    subi	$t5, $t5, 1			# $t5 = $t5 - 1
+    j		loop_over_num_strings	# jump to loop_over_strings
+    
+strncmp_compare_greater:
+    addi $v0, $v0, 1
+    slt		$t3, $t3, $t4		# $t3 = ($t3 < $t4) ? 1 : 0
+    beq		$t3, $zero, finish_strcmp	# if $t3 == $zero then goto finish_strcmp
+    subi	$v0, $v0, 2			# $v0 = $v0 - 2
+
+finish_strncmp:
+    jr		$ra					# jump to $ra
+
+check_prefix:
+    # input:
+    # $a0 => prefix to check
+    # $a1 => the command
+    # return:
+    # $zero => if prefix is equals to the command prefix
+    # -1 or 1 => if prefix is not equal to the command prefix
+
+    # Save $ra before jump and link
+    subi	$sp, $sp, 4			# $sp = $sp - 4
+    sw		$ra, 0($sp)		# 
+
+check_prefix_len_word:
+    jal		strlen				# jump to strlen and save position to $ra
+    
+check_prefix_compare_words:
+    #Check prefix word
+    addi	$a3, $v0, 0			# $a3 = $v0 + 0
+    jal		strncmp				# jump to strncmp and save position to $ra
+    bne		$v0, $zero, check_prefix_finish	# if $v0 != $zero then goto check_prefix_finish
+
+    # Load separator
+    la		$t2, sep_args		# 
+    lb		$t2, 0($t2)		# 
+
+    add		$t0, $a1, $a3		# $t0 = $a1 + $a3
+    lb		$t0, 0($t0)		# 
+    beq		$t0, $t2, check_prefix_finish	# if $t0 == $t2 then goto check_prefix_finish
+    addi	$v0, $v0, 1			# $v0 = $v0 + 1
+    
+check_prefix_finish:
+    # Get $ra back
+    lw		$ra, 0($sp)		# 
+    addi	$sp, $sp, 4			# $sp = $sp + 4
+
     jr		$ra					# jump to $ra
