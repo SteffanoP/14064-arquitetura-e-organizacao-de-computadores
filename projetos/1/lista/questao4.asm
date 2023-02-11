@@ -168,7 +168,7 @@ loop_over_num_strings:
 strncmp_compare_greater:
     addi $v0, $v0, 1
     slt		$t3, $t3, $t4		# $t3 = ($t3 < $t4) ? 1 : 0
-    beq		$t3, $zero, finish_strcmp	# if $t3 == $zero then goto finish_strcmp
+    beq		$t3, $zero, finish_strncmp	# if $t3 == $zero then goto finish_strcmp
     subi	$v0, $v0, 2			# $v0 = $v0 - 2
 
 finish_strncmp:
