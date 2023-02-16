@@ -7,23 +7,23 @@
 
 .text
 
-main:
-    lw		$s0, receiver_ready		# 
-    lw		$s1, receiver_data		# 
-    lw		$s2, transmitter_ready	# 
-    lw		$s3, transmitter_data	# 
+main:                               # função inicial do programa
+    lw		$s0, receiver_ready		# carrega o valor de 'receiver_ready' em $s0
+    lw		$s1, receiver_data		# carrega o valor de 'receiver_data' em $s1
+    lw		$s2, transmitter_ready	# carrega o valor de 'transmitter_ready' em $s2
+    lw		$s3, transmitter_data	# carrega o valor de 'transmitter_data' em $s3
     
 loop_wait_for_character:
-    lb		$t0, 0($s0)		# 
-    bne		$t0, $zero, read_and_write_character	# if $t0 != $zero then goto read_character
-    j		loop_wait_for_character			# jump to loop
+    lb		$t0, 0($s0)		# carrega um byte de memória a partir do endereço armazenado em $s0 e o coloca no $t0
+    bne		$t0, $zero, read_and_write_character	# se $t0 != $zero, vá para 'read_character'
+    j		loop_wait_for_character			# jump para 'loop_wait_for_character'
 
 read_and_write_character:
-    lw		$t0, 0($s1)		# 
-    sw		$t0, 0($s3)		#
+    lw		$t0, 0($s1)		# carrega uma palavra de memória a partir do endereço armazenado em $s1 e a coloca em $t0
+    sw		$t0, 0($s3)		# armazena o conteúdo do $t0 na memória, no endereço armazenado em $s3.
 
 wait_display_to_write:
-    lb		$t0, 0($s2)		# 
-    beq		$t0, $zero, wait_display_to_write	# if $t0 == $zero then goto wait_display_to_write
-    j		loop_wait_for_character				# jump to loop
+    lb		$t0, 0($s2)		# carrega um byte de memória a partir do endereço armazenado em $s2 e o coloca em $t0
+    beq		$t0, $zero, wait_display_to_write	# se $t0 == $zero, então vá para 'wait_display_to_write'
+    j		loop_wait_for_character				# jump para 'loop_wait_for_character'
     
