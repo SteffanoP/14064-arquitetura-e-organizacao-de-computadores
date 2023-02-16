@@ -121,6 +121,12 @@ write_current_shell_cmd:
     j		main				# jump to main
 
 ad_morador:
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    la		$t0, nl		# 
+
+    write_shell($t0) # Print de \n
+    write_shell($v0) # Print do resultado do jump_prefix
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
@@ -271,4 +277,22 @@ check_prefix_finish:
     lw		$ra, 0($sp)		# 
     addi	$sp, $sp, 4			# $sp = $sp + 4
 
+    jr		$ra					# jump to $ra
+
+jump_prefix:
+    # Input:
+    # $a0 => prefix address to jump
+    # return:
+    # address without prefix
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    lw		$t1, sep_args		# 
+    
+jump_prefix_loop_until_sep_arg:
+    lb		$t2, 0($t0)		# 
+    beq		$t2, $t1, jump_prefix_end	# if $t0 == $t1 then goto jump_prefix_end
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    j		jump_prefix_loop_until_sep_arg				# jump to jump_prefix_loop_until_sep_arg
+    
+jump_prefix_end:
+    addi	$v0, $t0, 1			# $v0 = $t0 + 1 | Get address after the sep
     jr		$ra					# jump to $ra
