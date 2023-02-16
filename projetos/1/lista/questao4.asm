@@ -147,13 +147,13 @@ strncmp:
     addi	$t1, $a1, 0			# $t1 = $a1 + 0
     addi	$t5, $a3, 0			# $t5 = $a3 + 0
 
-    addi	$v0, $zero, 0
+    addi	$v0, $zero, 0       # $v0 = $zero + 0
 
-loop_over_num_strings:
+loop_over_num_strings:  
     beq		$t5, $zero, finish_strncmp	# se $t5 == $zero então vai para 'finish_strncmp
 
-    lb		$t3, 0($t0)		# 
-    lb		$t4, 0($t1)		# 
+    lb		$t3, 0($t0)		# carrega byte por byte do número de strings de $t0 para $t3
+    lb		$t4, 0($t1)		# carrega byte por byte do número de strings de $t1 para $t4
     bne		$t3, $t4, strncmp_compare_greater	# se $t3 != $t4 então vai para 'compare_greater
     beq		$t3, $zero, finish_strncmp	# se $t3 == $zero então vai para 'finish_strcmp
 
@@ -163,7 +163,7 @@ loop_over_num_strings:
     j		loop_over_num_strings	# jump para loop_over_strings
     
 strncmp_compare_greater:
-    addi $v0, $v0, 1
+    addi $v0, $v0, 1            # $v0 = $v0 + 1
     slt		$t3, $t3, $t4		# $t3 = ($t3 < $t4) ? 1 : 0
     beq		$t3, $zero, finish_strncmp	# se $t3 == $zero então vai para 'finish_strcmp
     subi	$v0, $v0, 2			# $v0 = $v0 - 2
@@ -176,19 +176,19 @@ strcat:
     addi	$t1, $a1, 0			# $t1 = $a1 + 0
     
 strcat_search_null_address:
-    lb		$t2, 0($t0)		# 
+    lb		$t2, 0($t0)		# o conteúdo de memória armazenado no endereço apontado por $t0 é carregado em $t2
     beq		$t2, $zero, strcat_loop_write_string	# se $t2 == $zero então vai para 'strcat_write_string
     addi	$t0, $t0, 1			# $t0 = $t0 + 1
-    j strcat_search_null_address
+    j strcat_search_null_address    # jump para strcat_search_null_address
 
 strcat_loop_write_string:
-    lb		$t2, 0($t1)		# 
+    lb		$t2, 0($t1)		# carrega byte por byte o conteúdo de memória armazenado no endereço apontado por $t2 para $t1
     beq		$t2, $zero, strcat_finish	# se $t2 == $zero então vai para 'strcat_finish
-    sb		$t2, 0($t0)		# 
+    sb		$t2, 0($t0)		# armazena byte por byte de $t2 para $t0
 
     addi	$t0, $t0, 1			# $t0 = $t0 + 1
     addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    j strcat_loop_write_string
+    j strcat_loop_write_string  # jump para strcat_loop_write_string
     
 strcat_finish:
     addi	$v0, $a0, 0			# $v0 = $a0 + 0
