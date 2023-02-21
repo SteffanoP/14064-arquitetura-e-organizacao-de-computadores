@@ -12,6 +12,7 @@
 
     # ad_morador data
     cmd_ad_morador: .asciiz "ad_morador"
+    cmd_ad_morador_sucessfull_message: .asciiz "Morador cadastrado com sucesso!"
     cmd_ad_morador_error_format_1: .asciiz "\nad_morador não está formatado corretamente, verifique se você especificou a <option1>-<option2> corretamente.\n"
     cmd_ad_morador_error_format_2: .asciiz "\nValor de apartamento inválido, certifique que o valor está no padrão X0Z, tal que X é o andar e Z é o número do apartamento\n"
     sep_apt_number: .asciiz "0"
@@ -167,9 +168,54 @@ ad_morador:
     slti	$t0, $v0, 21			# $t0 = ($v0 < 21) ? 1 : 0 | Check if size is less or equals the limit of 20 characters
     beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
 
+    # Allocate necessary space to store object
+    # Allocate 28 of bytes in memory
+    addi	$a0, $0, 28		# 26 bytes to be allocated
+    addi	$v0, $0, 9		# system call #9 - allocate memory
+    syscall					# execute
+    addi	$t0, $v0, 0			# $t0 = $v0 + 0
+
+    # Store object in linked list    
+    addi	$t1, $s2, 0			# $t1 = $s2 + 0
+    bne		$s2, $zero, ad_morador_check_where_to_store	# if $s2 != $zero then goto ad_morador_check_where_to_store
+    addi	$s2, $t0, 0			# $s2 = $t0 + 0
+    addi	$t1, $s2, 0			# $t1 = $s2 + 0
+
+ad_morador_check_where_to_store:
+    # Verifies where in the linked list is available to store data
+    # It goes from the address stored in $s2 and tries to 
+    lb		$t2, 1($t1)		#
+    beq		$t2, $zero, ad_morador_store_morador	# if $t2 == $zero then goto ad_morador_store_morador
+    lw		$t2, 24($t1)		# 
+    beq		$t2, $zero, ad_morador_jump_to_next_block	# if $t2 == $zero then goto ad_morador_jump_to_next_block
+    addi	$t1, $t2, 0			# $t1 = $t2 + 0
+    j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
+
+ad_morador_jump_to_next_block:
+    # In case the current block is already fullfilled, jump to the next block
+    sw		$t0, 24($t1)		# 
+    addi	$t1, $t0, 0			# $t1 = $t0 + 0
+    j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
+
+ad_morador_store_morador:  
+    # Read from command and stores it in the current block
+    
+    # Floor and Apartment number
+    lb		$t3, 0($t6)		# 
+    sb		$t3, 0($t1)		# 
+    lb		$t3, 2($t6)		# 
+    sb		$t3, 1($t1)		# 
+    
+    # The name of the morador
+    addi	$a0, $t1, 2			# $a0 = $t1 + 2
+    addi	$a1, $t6, 4			# $a1 = $t6 + 4
+    jal		strcpy				# jump to strcpy and save position to $ra   
+
+    # Storing is successfull, than shall return success message and clear command
     la		$t0, nl		# 
-    write_shell($t0) # Print de \n
-    write_shell($t6) # Print do resultado do jump_prefix
+    write_shell($t0) # Print of \n
+    la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
+    write_shell($t0) # Print Sucessfull message
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 ad_morador_error_format_1:
@@ -359,3 +405,19 @@ jump_prefix_loop_until_sep_arg:
 jump_prefix_end:
     addi	$v0, $t0, 1			# $v0 = $t0 + 1 | Get address after the sep
     jr		$ra					# jump to $ra
+strcpy:
+    addi	$t0, $a0, 0		# $t0 = $a1 + 0
+    addi	$t1, $a1, 0		# $t1 = $a0 + 0
+
+loop_over_string:
+    lb		$t2, 0($t1)		# carrega byte por byte da string de $t1 para $t2
+    sb		$t2, 0($t0)		# armazena byte por byte de $t2 para $t0 
+    beq		$t2, $zero, finish_strcpy	# se $t2 == $zero então vai para 'finish_strcpy'
+    
+    addi	$t1, $t1, 1			# $t0 = $t0 + 1, passa para o próximo caracter da string
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1, passa para o próximo espaço vazio para armazenar o novo caracter
+	j	loop_over_string        # realiza jump para 'loop_over_string'
+    
+finish_strcpy:
+    addi $v0, $a0, 0            # $v0 = $a0 + 0, move o valor de $a0 para $v0
+    jr		$ra					# jump para o endereço presente em $ra
