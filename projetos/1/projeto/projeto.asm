@@ -10,7 +10,14 @@
     transmitter_ready: .word 0xffff0008
     transmitter_data: .word 0xffff000c
 
+    # ad_morador data
     cmd_ad_morador: .asciiz "ad_morador"
+    cmd_ad_morador_error_format_1: .asciiz "\nad_morador não está formatado corretamente, verifique se você especificou a <option1>-<option2> corretamente.\n"
+    cmd_ad_morador_error_format_2: .asciiz "\nValor de apartamento inválido, certifique que o valor está no padrão X0Z, tal que X é o andar e Z é o número do apartamento\n"
+    sep_apt_number: .asciiz "0"
+    cmd_ad_morador_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
+    cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n"
+    cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -44,6 +51,11 @@
         lb		$t2, 0($t0)		# 
         beq		$t2, $zero, loop_wait_new_char	# if $t2 == $zero then goto loop_wait_new_char
 
+.end_macro
+
+.macro print_error (%data_label)
+    la		$t0, %data_label		# 
+    write_shell($t0)
 .end_macro
 
 init:
@@ -123,10 +135,61 @@ write_current_shell_cmd:
 ad_morador:
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix				# jump to jump_prefix and save position to $ra
-    la		$t0, nl		# 
 
+    # Check format <option1>-<option2>
+    lb		$t0, 3($v0)		# 
+    lb		$t1, sep_args	#
+    bne		$t0, $t1, ad_morador_error_format_1	# if $t0 != $t1 then goto ad_morador_error_format
+
+    # Check format X0Z from apartment's number
+    lb		$t0, 1($v0)		# Load char on the position whereas should be the separator from X and Z
+    lb		$t1, sep_apt_number		# Load separator of floor (X) and apartaments (Z) => ("0")
+    bne		$t0, $t1, ad_morador_error_format_2	# if $t0 != $t1 then goto ad_morador_error_format_2
+
+    # Check if floor is valid ([0,9])
+    lb		$t0, 0($v0)		# Load char on the position whereas should be the floor
+    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Convert char into dec
+    slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => Check if less than 10
+    beq		$t0, $zero, ad_morador_error_invalid_floor	# if $t0 == $zero then goto ad_morador_error_invalid_floor
+
+    # Check if Apartament Number is valid
+    lb		$t0, 2($v0)		# Load char on the position whereas should be the apartment number
+    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Convert char into dec
+    slti	$t1, $t0, 5			# $t1 = ($t0 < 5) ? 1 : 0 => Check if less than 5
+    beq		$t1, $zero, ad_morador_error_invalid_apartment	# if $t1 == $zero then goto ad_morador_error_invalid_apartment
+    # Check if is not zero
+    beq		$t0, $zero, ad_morador_error_invalid_apartment	# if $t0 == $zero then goto ad_morador_error_invalid_apartment
+    
+    # Check size of the string from morador name's
+    addi	$t6, $v0, 0			# $t6 = $v0 + 0 | Move $v0 into $t6, because $t6 is the last temporary to be assumed as temp
+    addi	$a0, $t6, 4			# $a0 = $t6 + 4 | Move $t6 into $a0.
+    jal		strlen				# jump to strlen and save position to $ra
+    slti	$t0, $v0, 21			# $t0 = ($v0 < 21) ? 1 : 0 | Check if size is less or equals the limit of 20 characters
+    beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
+
+    la		$t0, nl		# 
     write_shell($t0) # Print de \n
-    write_shell($v0) # Print do resultado do jump_prefix
+    write_shell($t6) # Print do resultado do jump_prefix
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_format_1:
+    print_error(cmd_ad_morador_error_format_1)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_format_2:
+    print_error(cmd_ad_morador_error_format_2)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_invalid_floor:
+    print_error(cmd_ad_morador_error_invalid_floor)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_invalid_apartment:
+    print_error(cmd_ad_morador_error_invalid_apartament)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_invalid_name_size:
+    print_error(cmd_ad_morador_error_invalid_name_size)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
