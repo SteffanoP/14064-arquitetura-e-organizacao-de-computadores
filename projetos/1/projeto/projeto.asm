@@ -25,6 +25,7 @@
     cmd_ad_auto: .asciiz "ad_auto"
     cmd_ad_auto_type_moto: .asciiz "m"
     cmd_ad_auto_type_carro: .asciiz "c"
+    cmd_ad_auto_error_format_1: .asciiz "\nad_auto não está formatado corretamente, verifique se você especificou a <option1>-<option2>-<option3> corretamente.\n"
     cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n"
 
     cmd_help: .asciiz "help"
@@ -307,6 +308,28 @@ ad_auto:
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
 
     # 303-c-Fiat Uno-Verde
+    
+    # Verifica formatação do comando ad_auto-<option1>-<option2>-<option3>
+    lb		$t1, 3($t0)		# 
+    lb		$t2, sep_args	#
+    bne		$t1, $t2, ad_auto_error_format_1	# if $t1 != $t2 then goto ad_auto_error_format
+    lb		$t1, 5($t0)		# 
+    bne		$t1, $t2, ad_auto_error_format_1	# if $t0 != $t1 then goto ad_auto_error_format
+    
+    # Verifica formatação entre <option3>-<option4>
+    addi	$a0, $t0, 6			# $a0 = $t0 + 6
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    beq		$v0, $zero, ad_auto_error_format_1	# if $v0 == $zero then goto ad_auto_error_format_1
+    addi	$t1, $v0, 6			# $t1 = $v0 + 6
+    add		$t1, $t1, $t0		# $t1 = $t1 + $t0
+    lb		$t3, 0($t1)		# 
+    lb		$t2, sep_args		# 
+    bne		$t3, $t2, ad_auto_error_format_1	# if $t3 != $t2 then goto ad_auto_error_format_1
+    addi	$t1, $t1, 1			# $t1 = $t1 + 1
+    lb		$t3, 0($t1)		# 
+    beq		$t3, $zero, ad_auto_error_format_1	# if $t3 == $zero then goto ad_auto_error_format_1
+
     # Verifica se o tipo do automóvel é válido
     lb		$t1, cmd_ad_auto_type_moto		# 
     lb		$t2, 4($t0)		# 
@@ -317,7 +340,11 @@ ad_auto:
     
     ad_auto_type_valid:
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
-    
+
+ad_auto_error_format_1:
+    print_error(cmd_ad_auto_error_format_1)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
 ad_auto_error_invalid_auto_type:
     print_error(cmd_ad_auto_error_invalid_type_auto)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
@@ -576,4 +603,21 @@ store_morador:
     jal		strcpy				# jump to strcpy and save position to $ra
     lw		$ra, 0($sp)		# 
     addi	$sp, $sp, 4			# $sp = $sp + 4
+    jr		$ra					# jump to $ra
+
+# Função que calcula o tamanho de uma String até um separador
+# Porém, caso um \0 aconteça, termina ali
+strlen_until_sep:
+    addi	$v0, $a0, 0			# $t0 = $a0 + 0
+    addi	$a1, $a1, 0			# $a1 = $a1 + 0
+
+strlen_until_sep_loop_over_str:
+    lb		$t2, 0($v0)		# 
+    beq		$t2, $a1, strlen_until_sep_finish	# if $t2 == $t1 then goto strlen_until_sep_finish
+    beq		$t2, $zero, strlen_until_sep_finish	# if $t2 == $zero then goto strlen_until_sep_finish
+    addi	$v0, $v0, 1			# $t0 = $t0 + 1
+    j strlen_until_sep_loop_over_str
+
+strlen_until_sep_finish:
+    sub		$v0, $v0, $a0		# $v0 = $v0 - $a0
     jr		$ra					# jump to $ra
