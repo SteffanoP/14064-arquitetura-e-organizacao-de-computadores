@@ -169,8 +169,8 @@ ad_morador:
     beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
 
     # Allocate necessary space to store object
-    # Allocate 28 of bytes in memory
-    addi	$a0, $0, 28		# 26 bytes to be allocated
+    # Allocate 196 of bytes in memory
+    addi	$a0, $0, 196		# 196 bytes to be allocated
     addi	$v0, $0, 9		# system call #9 - allocate memory
     syscall					# execute
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
@@ -186,14 +186,14 @@ ad_morador_check_where_to_store:
     # It goes from the address stored in $s2 and tries to 
     lb		$t2, 1($t1)		#
     beq		$t2, $zero, ad_morador_store_morador	# if $t2 == $zero then goto ad_morador_store_morador
-    lw		$t2, 24($t1)		# 
+    lw		$t2, 192($t1)		# 
     beq		$t2, $zero, ad_morador_jump_to_next_block	# if $t2 == $zero then goto ad_morador_jump_to_next_block
     addi	$t1, $t2, 0			# $t1 = $t2 + 0
     j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
 
 ad_morador_jump_to_next_block:
     # In case the current block is already fullfilled, jump to the next block
-    sw		$t0, 24($t1)		# 
+    sw		$t0, 192($t1)		# 
     addi	$t1, $t0, 0			# $t1 = $t0 + 0
     j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
 
