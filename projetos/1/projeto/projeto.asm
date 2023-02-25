@@ -29,6 +29,7 @@
     cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n"
     cmd_ad_auto_error_invalid_modelo_size: .asciiz "\nO nome do modelo excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_auto_error_invalid_cor_size: .asciiz "\nO nome da cor excede o tamanho de 14 caracteres. Por favor tente novamente com um nome menor.\n"
+    cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -353,6 +354,12 @@ ad_auto:
     slti	$t1, $v0, 15			# $t1 = ($v0 < 15) ? 1 : 0
     beq		$t1, $zero, ad_auto_error_invalid_cor_size	# if $t1 == $zero then goto ad_auto_error_invalid_cor_size
 
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 ad_auto_error_format_1:
@@ -370,7 +377,11 @@ ad_auto_error_invalid_modelo_size:
 ad_auto_error_invalid_cor_size:
     print_error(cmd_ad_auto_error_invalid_cor_size)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
-    
+
+ad_auto_error_apt_not_found:
+    print_error(cmd_ad_auto_error_apt_not_found)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
 help:
     la		$t0, std_help		# 
     write_shell($t0)
