@@ -169,8 +169,8 @@ ad_morador:
     beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
 
     # Allocate necessary space to store object
-    # Allocate 196 of bytes in memory
-    addi	$a0, $0, 196		# 196 bytes to be allocated
+    # Allocate 200 of bytes in memory
+    addi	$a0, $0, 200		# 200 bytes to be allocated
     addi	$v0, $0, 9		# system call #9 - allocate memory
     syscall					# execute
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
@@ -186,14 +186,14 @@ ad_morador_check_where_to_store:
     # It goes from the address stored in $s2 and tries to 
     lb		$t2, 1($t1)		#
     beq		$t2, $zero, ad_morador_store_morador	# if $t2 == $zero then goto ad_morador_store_morador
-    lw		$t2, 192($t1)		# 
+    lw		$t2, 196($t1)		# 
     beq		$t2, $zero, ad_morador_jump_to_next_block	# if $t2 == $zero then goto ad_morador_jump_to_next_block
     addi	$t1, $t2, 0			# $t1 = $t2 + 0
     j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
 
 ad_morador_jump_to_next_block:
     # In case the current block is already fullfilled, jump to the next block
-    sw		$t0, 192($t1)		# 
+    sw		$t0, 196($t1)		# 
     addi	$t1, $t0, 0			# $t1 = $t0 + 0
     j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
 
@@ -205,9 +205,14 @@ ad_morador_store_morador:
     sb		$t3, 0($t1)		# 
     lb		$t3, 2($t6)		# 
     sb		$t3, 1($t1)		# 
+
+    # Adiciona +1 a quantidade de moradores
+    lw		$t3, 4($t1)		# 
+    addi	$t3, $t3, 1			# $t3 = $t3 + 1
+    sw		$t3, 4($t1)		#     
     
     # The name of the morador
-    addi	$a0, $t1, 2			# $a0 = $t1 + 2
+    addi	$a0, $t1, 8			# $a0 = $t1 + 2
     addi	$a1, $t6, 4			# $a1 = $t6 + 4
     jal		strcpy				# jump to strcpy and save position to $ra   
 
