@@ -19,6 +19,7 @@
     cmd_ad_morador_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
     cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n"
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
+    cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -176,7 +177,7 @@ ad_morador:
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
-    bne		$v0, $zero, write_current_shell_cmd	# if $v0 != $zero then goto write_current_shell_cmd    
+    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt    
 
     # A partir daqui aloca um novo bloco de memória para o apartamento
     # Allocate necessary space to store object
@@ -235,6 +236,32 @@ ad_morador_store_morador:
     write_shell($t0) # Print Sucessfull message
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
+ad_morador_into_existing_apt:
+    addi	$t0, $v0, 0			# $t0 = $v0 + 0
+    
+    # Verifica se o apartamento está cheio
+    lw		$t1, 4($t0)		#
+    addi	$t2, $t1, 0			# $t2 = $t1 + 0
+    slti	$t2, $t2, 5			# $t2 = ($t2 < 5) ? 1 : 0
+    beq		$t2, $zero, ad_morador_error_apt_is_full	# if $t2 == $zero then goto ad_morador_error_apt_is_full
+
+    # Adiciona +1 a quantidade de moradores no apartamento
+    addi	$t1, $t1, 1			# $t1 = $t1 + 1
+    sw		$t1, 4($t0)		# 
+    
+    # Armazena o nome do morador no slot disponível
+    addi	$a0, $t0, 0			# $a0 = $t0 + 0
+    addi	$a1, $t6, 0			# $a1 = $t6 + 0
+    addi	$a2, $t1, 0			# $a2 = $t1 + 0
+    jal		store_morador				# jump to store_morador and save position to $ra
+    
+    # Storing is successfull, than shall return success message and clear command
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+    la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
+    write_shell($t0) # Print Sucessfull message
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
 ad_morador_error_format_1:
     print_error(cmd_ad_morador_error_format_1)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
@@ -253,6 +280,10 @@ ad_morador_error_invalid_apartment:
 
 ad_morador_error_invalid_name_size:
     print_error(cmd_ad_morador_error_invalid_name_size)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_morador_error_apt_is_full:
+    print_error(cmd_ad_morador_error_apt_is_full)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
