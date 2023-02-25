@@ -222,10 +222,11 @@ ad_morador_store_morador:
     addi	$t3, $t3, 1			# $t3 = $t3 + 1
     sw		$t3, 4($t1)		#     
     
-    # The name of the morador
-    addi	$a0, $t1, 8			# $a0 = $t1 + 2
-    addi	$a1, $t6, 4			# $a1 = $t6 + 4
-    jal		strcpy				# jump to strcpy and save position to $ra   
+    # Armazena o nome do morador
+    addi	$a0, $t1, 0			# $a0 = $t1 + 0
+    addi	$a1, $t6, 0			# $a1 = $t6 + 0
+    addi	$a2, $t3, 0			# $a2 = $t3 + 0
+    jal		store_morador				# jump to store_morador and save position to $ra
 
     # Storing is successfull, than shall return success message and clear command
     la		$t0, nl		# 
@@ -489,4 +490,23 @@ check_apt:
     
 check_apt_false:
     addi	$v0, $zero, 0			# $v0 = $zero + 0
+    jr		$ra					# jump to $ra
+
+# Função que armazena o nome do morador em um apartamento
+store_morador:
+    # $a2 => Quantidade de moradores atualizada
+    # Cálculo de offset da posição da string onde o nome do morador será inserido
+    subi	$t1, $a2, 1			# $t1 = $a2 - 1
+    addi	$t2, $zero, 22			# $t2 = $zero + 22
+    mul     $t1, $t1, $t2       # $t1 = $t1 * $t2
+    addi	$t1, $t1, 8			# $t1 = $t1 + 8
+    
+    # Copia o valor do registrador de comando para o bloco de memória
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$ra, 0($sp)		# 
+    add		$a0, $a0, $t1		# $a0 = $a0 + $t1
+    addi	$a1, $t6, 4			# $a1 = $t6 + 4
+    jal		strcpy				# jump to strcpy and save position to $ra
+    lw		$ra, 0($sp)		# 
+    addi	$sp, $sp, 4			# $sp = $sp + 4
     jr		$ra					# jump to $ra
