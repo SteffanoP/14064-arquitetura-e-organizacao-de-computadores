@@ -305,24 +305,24 @@ ad_auto:
     # Pula e Armazena a entrada para ad_auto
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix				# jump to jump_prefix and save position to $ra
-    addi	$t0, $v0, 0			# $t0 = $v0 + 0
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
     # 303-c-Fiat Uno-Verde
     
     # Verifica formatação do comando ad_auto-<option1>-<option2>-<option3>
-    lb		$t1, 3($t0)		# 
+    lb		$t1, 3($t6)		# 
     lb		$t2, sep_args	#
     bne		$t1, $t2, ad_auto_error_format_1	# if $t1 != $t2 then goto ad_auto_error_format
-    lb		$t1, 5($t0)		# 
+    lb		$t1, 5($t6)		# 
     bne		$t1, $t2, ad_auto_error_format_1	# if $t0 != $t1 then goto ad_auto_error_format
     
     # Verifica formatação entre <option3>-<option4>
-    addi	$a0, $t0, 6			# $a0 = $t0 + 6
+    addi	$a0, $t6, 6			# $a0 = $t6 + 6
     lb		$a1, sep_args		# 
     jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
     beq		$v0, $zero, ad_auto_error_format_1	# if $v0 == $zero then goto ad_auto_error_format_1
     addi	$t1, $v0, 6			# $t1 = $v0 + 6
-    add		$t1, $t1, $t0		# $t1 = $t1 + $t0
+    add		$t1, $t1, $t6		# $t1 = $t1 + $t6
     lb		$t3, 0($t1)		# 
     lb		$t2, sep_args		# 
     bne		$t3, $t2, ad_auto_error_format_1	# if $t3 != $t2 then goto ad_auto_error_format_1
@@ -332,7 +332,7 @@ ad_auto:
 
     # Verifica se o tipo do automóvel é válido
     lb		$t1, cmd_ad_auto_type_moto		# 
-    lb		$t2, 4($t0)		# 
+    lb		$t2, 4($t6)		# 
     beq		$t1, $t2, ad_auto_type_valid	# if $t1 == $t2 then goto ad_auto_type_valid
     lb		$t1, cmd_ad_auto_type_carro		# 
     beq		$t1, $t2, ad_auto_type_valid	# if $t1 == $t2 then goto ad_auto_type_valid
