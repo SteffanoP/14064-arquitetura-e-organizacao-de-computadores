@@ -23,6 +23,9 @@
 
     #ad_auto data
     cmd_ad_auto: .asciiz "ad_auto"
+    cmd_ad_auto_type_moto: .asciiz "m"
+    cmd_ad_auto_type_carro: .asciiz "c"
+    cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -302,6 +305,22 @@ ad_auto:
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix				# jump to jump_prefix and save position to $ra
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
+
+    # 303-c-Fiat Uno-Verde
+    # Verifica se o tipo do automóvel é válido
+    lb		$t1, cmd_ad_auto_type_moto		# 
+    lb		$t2, 4($t0)		# 
+    beq		$t1, $t2, ad_auto_type_valid	# if $t1 == $t2 then goto ad_auto_type_valid
+    lb		$t1, cmd_ad_auto_type_carro		# 
+    beq		$t1, $t2, ad_auto_type_valid	# if $t1 == $t2 then goto ad_auto_type_valid
+    j		ad_auto_error_invalid_auto_type				# jump to ad_auto_error_invalid_auto_type
+    
+    ad_auto_type_valid:
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    
+ad_auto_error_invalid_auto_type:
+    print_error(cmd_ad_auto_error_invalid_type_auto)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
     la		$t0, std_help		# 
