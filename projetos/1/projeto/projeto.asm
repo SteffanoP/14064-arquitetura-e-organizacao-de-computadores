@@ -59,6 +59,10 @@
     write_shell($t0)
 .end_macro
 
+.macro jump_to_next_ll (%current_ll_address)
+    lw		%current_ll_address, 196(%current_ll_address) #
+.end_macro
+
 init:
     la		$t0, shell_user		# 
     write_shell($t0)
@@ -168,6 +172,13 @@ ad_morador:
     slti	$t0, $v0, 21			# $t0 = ($v0 < 21) ? 1 : 0 | Check if size is less or equals the limit of 20 characters
     beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
 
+    # Verifica se o apartamento já existe
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    bne		$v0, $zero, write_current_shell_cmd	# if $v0 != $zero then goto write_current_shell_cmd    
+
+    # A partir daqui aloca um novo bloco de memória para o apartamento
     # Allocate necessary space to store object
     # Allocate 200 of bytes in memory
     addi	$a0, $0, 200		# 200 bytes to be allocated
@@ -426,3 +437,56 @@ loop_over_string:
 finish_strcpy:
     addi $v0, $a0, 0            # $v0 = $a0 + 0, move o valor de $a0 para $v0
     jr		$ra					# jump para o endereço presente em $ra
+
+# Verifica se o apartamento já está cadastrado no sistema
+search_if_apt_exists:
+    addi	$t0, $a1, 0			# $t0 = $a1 + 0
+
+search_if_apt_exists_loop_over_ll:
+    beq		$t0, $zero, search_if_apt_exists_false	# if $t0 == $zero then goto search_if_apt_exists_false
+    
+    addi	$sp, $sp, -8			# $sp = $sp + -8
+    sw		$ra, 0($sp)		# 
+    sw		$t0, 4($sp)		# 
+    addi	$a0, $a0, 0			# $a0 = $a0 + 0
+    addi	$a1, $t0, 0			# $a1 = $t0 + 0
+    jal		check_apt				# jump to check_apt and save position to $ra
+    lw		$ra, 0($sp)		# 
+    lw		$t0, 4($sp)		# 
+    addi	$sp, $sp, 8			# $sp = $sp + 8
+    bne		$v0, $zero, search_if_apt_exists_true	# if $v0 != $zero then goto write_current_shell_cmd
+    jump_to_next_ll($t0)
+    j		search_if_apt_exists_loop_over_ll				# jump to search_if_apt_exists_loop_over_ll
+
+search_if_apt_exists_true:
+    addi	$v0, $t0, 0			# $v0 = $t0 + 0
+    jr		$ra					# jump to $ra
+
+search_if_apt_exists_false:
+    addi	$v0, $zero, 0			# $v0 = $zero + 0
+    jr		$ra					# jump to $ra
+
+check_apt:
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    addi	$t1, $a1, 0			# $t1 = $a1 + 0
+
+    # Verifica se o endereço armazenado em $t1 está vazio
+    beq		$t1, $zero, check_apt_false	# if $t1 == $zero then goto check_apt_false
+
+    # Verifica o andar
+    lb		$t2, 0($t0)		# 
+    lb		$t3, 0($t1)		#
+    bne		$t2, $t3, check_apt_false	# if $t2 != $t3 then goto check_apt_false
+
+    # Verifica o número do apt
+    lb		$t2, 2($t0)		# 
+    lb		$t3, 1($t1)		# 
+    bne		$t2, $t3, check_apt_false	# if $t2 != $t3 then goto check_apt_false
+
+    # O apartamento está nesse bloco (True):
+    addi	$v0, $zero, 1			# $v0 = $zero + 1
+    jr		$ra					# jump to $ra
+    
+check_apt_false:
+    addi	$v0, $zero, 0			# $v0 = $zero + 0
+    jr		$ra					# jump to $ra
