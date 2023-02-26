@@ -438,6 +438,12 @@ limpar_ap:
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found    
 
+    # Atualiza o link anterior para excluir o nó da lista ligada
+    addi	$t1, $v0, 0			# $t1 = $v0 + 0
+    addi	$t2, $v1, 0			# $t2 = $v1 + 0
+    lw		$t3, 196($t1)		# 
+    sw		$t3, 196($t2)		# 
+
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
@@ -641,6 +647,7 @@ search_if_apt_exists_loop_over_ll:
     lw		$t0, 4($sp)		# 
     addi	$sp, $sp, 8			# $sp = $sp + 8
     bne		$v0, $zero, search_if_apt_exists_true	# if $v0 != $zero then goto write_current_shell_cmd
+    addi	$v1, $t0, 0			# $v1 = $t0 + 0 | Mantém em $v1 o último apartamento antes do que se procura
     jump_to_next_ll($t0)
     j		search_if_apt_exists_loop_over_ll				# jump to search_if_apt_exists_loop_over_ll
 
