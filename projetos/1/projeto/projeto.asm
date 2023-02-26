@@ -31,6 +31,7 @@
     cmd_ad_auto_error_invalid_modelo_size: .asciiz "\nO nome do modelo excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_auto_error_invalid_cor_size: .asciiz "\nO nome da cor excede o tamanho de 14 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n"
+    cmd_ad_auto_error_not_enough_size: .asciiz "\nVocê não tem mais espaço disponível para o seu automóvel nesse apartamento!\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -360,6 +361,31 @@ ad_auto:
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+
+    #Verifica se há espaço para veículos no apartamento
+    lb		$t1, 4($t6)		# 
+    lb		$t2, cmd_ad_auto_type_carro		# 
+    beq		$t1, $t2, ad_auto_check_size_for_carros	# if $t1 == $t2 then goto ad_auto_check_size_for_carros
+    
+    # Verifica para adicionar moto no condomínio
+    lb		$t2, 118($v0)		# 
+    lb		$t3, 156($v0)		# 
+    lb		$t4, cmd_ad_auto_type_carro		# 
+    beq		$t2, $t4, ad_auto_error_not_enough_size	# if $t2 == $t4 then goto ad_auto_error_not_enough_size
+    beq		$t3, $t4, ad_auto_error_not_enough_size	# if $t3 == $t4 then goto ad_auto_error_not_enough_size
+    and		$t2, $t2, $t3		# $t2 = $t2 & $t3
+    beq		$t1, $t2, ad_auto_error_not_enough_size	# if $t1 == $t2 then goto ad_auto_error_not_enough_size
+    j		ad_auto_has_enough_space				# jump to ad_auto_has_enough_space
+    
+    # Verifica para adicionar carro no condomínio
+    ad_auto_check_size_for_carros:
+    lb		$t2, 118($v0)		# 
+    bne		$t2, $zero, ad_auto_error_not_enough_size	# if $t2 != $zero then goto target
+    lb		$t2, 156($v0)		# 
+    bne		$t2, $zero, ad_auto_error_not_enough_size	# if $t2 != $zero then goto ad_auto_error_not_enough_size
+    
+    ad_auto_has_enough_space:
+
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $v0, 0			# $a1 = $v0 + 0
     jal		store_auto				# jump to store_auto and save position to $ra
@@ -384,6 +410,10 @@ ad_auto_error_invalid_cor_size:
 
 ad_auto_error_apt_not_found:
     print_error(cmd_ad_auto_error_apt_not_found)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+ad_auto_error_not_enough_size:
+    print_error(cmd_ad_auto_error_not_enough_size)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
