@@ -427,6 +427,17 @@ ad_auto_error_not_enough_size:
 
 # Função que limpa o apartamento
 limpar_ap:
+    # Pula e Armazena a entrada para limpar_ap
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found    
+
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
