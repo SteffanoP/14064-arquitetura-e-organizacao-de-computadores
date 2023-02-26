@@ -35,6 +35,7 @@
 
     #limpar_ap data
     cmd_limpar_ap: .asciiz "limpar_ap"
+    cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -444,6 +445,17 @@ limpar_ap:
     lw		$t3, 196($t1)		# 
     sw		$t3, 196($t2)		# 
 
+    # Limpa todo o bloco com null bytes
+    addi	$a0, $t1, 0			# $a0 = $t1 + 0
+    addi	$a1, $zero, 200			# $a1 = $zero + 200
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    # Salva o endereço na Stack para usar em na criação de um novo apartamento
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$t1, 0($sp)		# 
+
+    la		$t3, cmd_limpar_ap_successfull_message		# 
+    write_shell($t3)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 help:
@@ -789,3 +801,16 @@ finish_memcpy:
     sb		$zero, 0($t1)		# armazena byte por byte de $zero para $t1
     addi	$v0, $a0, 0			# $v0 = $a0 + 0, passa o valor de $a0 para $v0 como resultado
     jr		$ra					# jump para $ra
+
+fill_with_null_byte:
+    add		$t1, $a0, $a1		# $t1 = $a0 + $a1
+    addi	$t2, $a0, 0			# $t2 = $a0 + 0
+    
+fill_with_null_byte_loop:
+    beq		$t1, $t2, fill_with_null_byte_finish	# if $t1 == $t2 then goto fill_with_null_byte_finish
+    sb		$zero, 0($t2)		# 
+    addi	$t2, $t2, 1			# $t2 = $t2 + 1
+    j		fill_with_null_byte_loop				# jump to fill_with_null_byte_loop  
+
+fill_with_null_byte_finish:
+    jr		$ra					# jump to $ra
