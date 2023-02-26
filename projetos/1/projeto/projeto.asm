@@ -25,6 +25,7 @@
     cmd_ad_auto: .asciiz "ad_auto"
     cmd_ad_auto_type_moto: .asciiz "m"
     cmd_ad_auto_type_carro: .asciiz "c"
+    cmd_ad_auto_sucessfull_message: .asciiz "\nAutomóvel Cadastrado com sucesso!"
     cmd_ad_auto_error_format_1: .asciiz "\nad_auto não está formatado corretamente, verifique se você especificou a <option1>-<option2>-<option3> corretamente.\n"
     cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n"
     cmd_ad_auto_error_invalid_modelo_size: .asciiz "\nO nome do modelo excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
@@ -359,6 +360,9 @@ ad_auto:
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $v0, 0			# $a1 = $v0 + 0
+    jal		store_auto				# jump to store_auto and save position to $ra
 
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
@@ -654,3 +658,73 @@ strlen_until_sep_loop_over_str:
 strlen_until_sep_finish:
     sub		$v0, $v0, $a0		# $v0 = $v0 - $a0
     jr		$ra					# jump to $ra
+
+# Armazena o automóvel em algum slot disponível
+store_auto:
+    addi	$t1, $a0, 0			# $t1 = $a0 + 0 | Carrega as informações do comando digitado
+    addi	$t2, $a1, 0			# $t2 = $a1 + 0 | Carrega o bloco da lista ligada
+    lb		$t3, 118($t2)		# 
+    addi	$t2, $t2, 118			# $t2 = $t2 + 118
+    beq		$t3, $zero, store_auto_slot_1	# if $t3 == $zero then goto store_auto_slot_1
+    # Cada slot de cada automóvel tem 38 bytes, basicamente estamos pulando 38 bytes para o slot 2
+    addi	$t2, $t2, 38			# $t2 = $t2 + 38
+
+store_auto_slot_1:
+    # Armazena o tipo
+    lb		$t3, 4($t1)		# 
+    sb		$t3, 0($t2)		# 
+
+    # Armazena o modelo
+    addi	$sp, $sp, -12			# $sp = $sp + -12
+    sw		$ra, 0($sp)		# 
+    sw		$t1, 4($sp)		# 
+    sw		$t2, 8($sp)		# 
+
+    # Obtém o tamanho do nome do modelo
+    addi	$a0, $t1, 6			# $a0 = $t6 + 6
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    lw		$t1, 4($sp)		# 
+    lw		$t2, 8($sp)		# 
+
+    addi	$a0, $t2, 1			# $a0 = $t2 + 1
+    addi	$a1, $t1, 6			# $a1 = $t1 + 6
+    addi	$a2, $v0, 0			# $a2 = $v0 + 0
+    jal		memcpy				# jump to strcpy and save position to $ra
+    lw		$t1, 4($sp)		# 
+    lw		$t2, 8($sp)		# 
+
+    # Armazena a cor do automóvel
+    addi	$a1, $t1, 7			# $a1 = $t1 + 7
+    add		$a1, $a1, $a2		# $a1 = $a1 + $a2
+
+    addi	$a0, $t2, 22			# $a0 = $t2 + 22
+    jal		strcpy				# jump to strcpy and save position to $ra
+
+    lw		$ra, 0($sp)		# 
+    addi	$sp, $sp, 12			# $sp = $sp + 12
+
+    la		$t1, cmd_ad_auto_sucessfull_message		# 
+    write_shell($t1)
+    jr		$ra					# jump to $ra
+
+memcpy:
+    addi	$t0, $a2, 0			# $t0 = $a2 + 0, atribuição do valor para registrador temporário $t0
+    addi	$t1, $a0, 0			# $t1 = $a0 + 0, atribuição do valor para registrador temporário $t1
+    addi	$t2, $a1, 0			# $t2 = $a1 + 0, atribuição do valor para registrador temporário $t2
+
+loop_over_num:
+    beq		$t0, $zero, finish_memcpy	# se $t0 == $zero então vai para 'finish_memcpy'
+    
+    lb		$t3, 0($t2)		    # carrega byte por byte da string de $t2 para $t3
+    sb		$t3, 0($t1)		    # armazena byte por byte de $t3 para $t1
+
+    addi	$t1, $t1, 1			# $t1 = $t1 + 1, passa para o próximo espaço vazio para armazenar o novo número
+    addi	$t2, $t2, 1			# $t1 = $t1 + 1, passa para o próximo número
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    j loop_over_num             # jump para 'loop_over_num'
+    
+finish_memcpy:
+    sb		$zero, 0($t1)		# armazena byte por byte de $zero para $t1
+    addi	$v0, $a0, 0			# $v0 = $a0 + 0, passa o valor de $a0 para $v0 como resultado
+    jr		$ra					# jump para $ra
