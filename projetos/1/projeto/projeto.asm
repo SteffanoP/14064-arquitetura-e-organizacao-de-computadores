@@ -35,6 +35,8 @@
 
     #rm_auto data
     cmd_rm_auto: .asciiz "rm_auto"
+    cmd_rm_auto_successfull_message: .asciiz "\nAutomóvel removido com sucesso!\n"
+    cmd_rm_auto_error_auto_not_found: .asciiz "\nNão foi possível encontrar o veículo informado para essa apartamento.\nTente novamente com o nome exato do veículo.\n"
 
     #limpar_ap data
     cmd_limpar_ap: .asciiz "limpar_ap"
@@ -435,6 +437,7 @@ ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
+# Remove um automóvel de um apartamento
 rm_auto:
     # Pula e armazena a entrada para rm_auto
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -442,11 +445,43 @@ rm_auto:
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
     # Verifica se o apartamento está cadastrado no condomínio
-    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0 | 303-XXXXXXXX
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+    # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
+    addi	$t7, $v0, 0			# $t1 = $v0 + 0
 
+    # Pula o número do apartamento para o nome do veículo
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
+    # Verifica se deseja remover o primeiro veículo
+    addi	$a0, $t7, 119		# $t7 = $t7 + 119
+    addi	$a1, $t6, 0			# $a1 = $t6 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
+
+    # Verifica se deseja remover o segundo veículo
+    addi	$a0, $t7, 157		# $t7 = $t7 + 119
+    addi	$a1, $t6, 0			# $a1 = $t6 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
+
+    j		rm_auto_error_auto_not_found				# jump to rm_auto_error_auto_not_found
+
+rm_auto_delete_auto:
+    subi	$a0, $a0, 1			# $t1 = $a0 - 1
+    addi	$a1, $zero, 38			# $a1 = $zero + 38
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra 
+    
+    la		$t0, cmd_rm_auto_successfull_message		# 
+    write_shell($t0)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+rm_auto_error_auto_not_found:
+    print_error(cmd_rm_auto_error_auto_not_found)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 # Função que limpa o apartamento
