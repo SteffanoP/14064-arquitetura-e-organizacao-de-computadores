@@ -33,6 +33,9 @@
     cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n"
     cmd_ad_auto_error_not_enough_size: .asciiz "\nVocê não tem mais espaço disponível para o seu automóvel nesse apartamento!\n"
 
+    #rm_auto data
+    cmd_rm_auto: .asciiz "rm_auto"
+
     #limpar_ap data
     cmd_limpar_ap: .asciiz "limpar_ap"
     cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
@@ -136,6 +139,12 @@ process_command:
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
     jal		check_prefix				# jump to check_prefix and save position to $ra
     beq		$v0, $zero, ad_auto	# if $v0 == $zero then goto ad_auto
+
+    # Comando rm_auto
+    la		$a0, cmd_rm_auto		# 
+    addi	$a1, $s0, 0			# $a1 = $s0 + 0
+    jal		check_prefix				# jump to check_prefix and save position to $ra
+    beq		$v0, $zero, rm_auto	# if $v0 == $zero then goto rm_auto
 
     # Comando limpar_ap
     la		$a0, cmd_limpar_ap		# 
@@ -424,6 +433,20 @@ ad_auto_error_apt_not_found:
 
 ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+rm_auto:
+    # Pula e armazena a entrada para rm_auto
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 # Função que limpa o apartamento
