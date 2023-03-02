@@ -486,6 +486,21 @@ rm_morador:
     addi	$a1, $t7, 8			# $a1 = $t7 + 0
     jal		strcmp				# jump to strcmp and save position to $ra
     beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto target
+    
+    rm_morador_mais_de_um_morador:
+
+    # Verifica se é o último morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 96			# $a1 = $t7 + 96
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, rm_morador_removes_last_morador	# if $v0 == $zero then goto rm_morador_removes_last_morador
+
+rm_morador_removes_last_morador:
+    addi	$a0, $t7, 96			# $a0 = $t7 + 96
+    addi	$a1, $zero, 21			# $a1 = $zero + 21
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+    
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
