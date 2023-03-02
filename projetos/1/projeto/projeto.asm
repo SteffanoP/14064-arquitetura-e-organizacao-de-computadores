@@ -177,6 +177,13 @@ write_current_shell_cmd:
 
     j		main				# jump to main
 
+clear_current_shell_cmd:
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    addi	$a1, $zero, 64			# $a1 = $zero + 64
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
 # Função que adiciona morador ao condomínio
 ad_morador:
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -274,7 +281,7 @@ ad_morador_store_morador:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_into_existing_apt:
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
@@ -300,31 +307,31 @@ ad_morador_into_existing_apt:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_1:
     print_error(cmd_ad_morador_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_2:
     print_error(cmd_ad_morador_error_format_2)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_floor:
     print_error(cmd_ad_morador_error_invalid_floor)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_apartment:
     print_error(cmd_ad_morador_error_invalid_apartament)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_name_size:
     print_error(cmd_ad_morador_error_invalid_name_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_apt_is_full:
     print_error(cmd_ad_morador_error_apt_is_full)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que adiciona um automóvel a um apartamento
 ad_auto:
@@ -411,31 +418,31 @@ ad_auto:
     addi	$a1, $v0, 0			# $a1 = $v0 + 0
     jal		store_auto				# jump to store_auto and save position to $ra
 
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_format_1:
     print_error(cmd_ad_auto_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_auto_type:
     print_error(cmd_ad_auto_error_invalid_type_auto)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_modelo_size:
     print_error(cmd_ad_auto_error_invalid_modelo_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
     
 ad_auto_error_invalid_cor_size:
     print_error(cmd_ad_auto_error_invalid_cor_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_apt_not_found:
     print_error(cmd_ad_auto_error_apt_not_found)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
 rm_auto:
@@ -478,11 +485,11 @@ rm_auto_delete_auto:
     
     la		$t0, cmd_rm_auto_successfull_message		# 
     write_shell($t0)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 rm_auto_error_auto_not_found:
     print_error(cmd_rm_auto_error_auto_not_found)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que limpa o apartamento
 limpar_ap:
@@ -514,12 +521,12 @@ limpar_ap:
 
     la		$t3, cmd_limpar_ap_successfull_message		# 
     write_shell($t3)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 help:
     la		$t0, std_help		# 
     write_shell($t0)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 exit:
     addi	$v0, $0, 10		# System call 10 - Exit
