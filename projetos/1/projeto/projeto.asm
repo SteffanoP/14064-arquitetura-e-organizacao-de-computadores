@@ -471,6 +471,18 @@ rm_morador:
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
     # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
     addi	$t7, $v0, 0			# $t1 = $v0 + 0
+
+    # Pula o número do apartamento para o nome do morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
+    # Verifica se é o primeiro morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 8			# $a1 = $t7 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto target
+
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
@@ -521,6 +533,7 @@ rm_auto_error_auto_not_found:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que limpa o apartamento
+# TODO: É necessário tratar para quando só há um morador.
 limpar_ap:
     # Pula e Armazena a entrada para limpar_ap
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
