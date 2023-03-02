@@ -459,6 +459,18 @@ rm_morador:
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
+    # Check format <option1>-<option2>
+    lb		$t0, 3($v0)		# 
+    lb		$t1, sep_args	#
+    bne		$t0, $t1, ad_morador_error_format_1	# if $t0 != $t1 then goto ad_morador_error_format
+
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0 | 303-XXXXXXXX
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+    # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
+    addi	$t7, $v0, 0			# $t1 = $v0 + 0
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
