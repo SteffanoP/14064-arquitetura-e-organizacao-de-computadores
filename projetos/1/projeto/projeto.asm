@@ -23,6 +23,7 @@
 
     # rm_morador data
     cmd_rm_morador: .asciiz "rm_morador"
+    cmd_rm_morador_error_not_found: .asciiz "\nO Morador não foi encontrado nesse apartamento.\n"
 
     #ad_auto data
     cmd_ad_auto: .asciiz "ad_auto"
@@ -495,6 +496,14 @@ rm_morador:
     jal		strcmp				# jump to strcmp and save position to $ra
     beq		$v0, $zero, rm_morador_removes_last_morador	# if $v0 == $zero then goto rm_morador_removes_last_morador
 
+    # Pesquisa pelo morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 0			# $a1 = $t7 + 0
+    jal		search_morador_in_apt				# jump to search_morador_in_apt and save position to $ra
+    beq		$v0, $zero, rm_morador_error_not_found	# if $v0 == $zero then goto rm_morador_error_not_found
+
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
 rm_morador_removes_last_morador:
     addi	$a0, $t7, 96			# $a0 = $t7 + 96
     addi	$a1, $zero, 21			# $a1 = $zero + 21
@@ -502,6 +511,8 @@ rm_morador_removes_last_morador:
     
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
+rm_morador_error_not_found:
+    print_error(cmd_rm_morador_error_not_found)
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
@@ -796,6 +807,58 @@ search_if_apt_exists_true:
 search_if_apt_exists_false:
     addi	$v0, $zero, 0			# $v0 = $zero + 0
     jr		$ra					# jump to $ra
+
+search_morador_in_apt:
+    # $a0 => Endereço da String do nome do morador
+    # $a1 => Endereço do bloco apartamento
+    # $v0 => Endereço do morador OU $zero se não encontrou nenhum
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    addi	$t1, $a1, 8			# $t1 = $a1 + 8
+    lw		$t2, 4($a1)		# Lê a quantidade de moradores que há
+
+    # Armazena na stack o valor de $ra
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$ra, 0($sp)		# 
+
+search_morador_in_apt_loop:
+    # Verifica quando não há mais moradores para procurar
+    beq		$t2, $zero, search_morador_in_apt_finish_not_found	# if $t2 == $zero then goto search_morador_in_apt_finish_not_found
+
+    # Armazena $t0, $t1 e $t2 na pilha
+    addi	$sp, $sp, -12			# $sp = $sp + -12
+    sw		$t0, 0($sp)		# 
+    sw		$t1, 4($sp)		# 
+    sw		$t2, 8($sp)		# 
+
+    # Verifica o morador atual
+    addi	$a0, $t0, 0			# $a0 = $t0 + 0
+    addi	$a1, $t1, 0			# $a1 = $t1 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    # Pega $t0, $t1 e $t2 da pilha
+    lw		$t0, 0($sp)		# 
+    lw		$t1, 4($sp)		# 
+    lw		$t2, 8($sp)		# 
+    addi	$sp, $sp, 12			# $sp = $sp + 12
+    # Verifica o strcmp
+    beq		$v0, $zero, search_morador_in_apt_finish_found	# if $v0 == $zero then goto search_morador_in_apt_finish_found
+
+    # Se não encontrado
+    # Subtrai a quantidade de moradores
+    subi	$t2, $t2, 1			# $t2 = $t2 - 1
+    # Pula para o próximo morador
+    addi	$t1, $t1, 22			# $t1 = $t1 + 22
+
+    # E reinicia o loop
+    j		search_morador_in_apt_loop				# jump to search_morador_in_apt_loop
+
+search_morador_in_apt_finish_not_found:
+    addi	$t1, $zero, 0			# $t1 = $zero + 0
+search_morador_in_apt_finish_found:
+    # Pega o endereço armazenado na pilha e volta com o resultado
+    addi	$v0, $t1, 0			# $v0 = $t1 + 0
+    lw		$ra, 0($sp)		# 
+    addi	$sp, $sp, 4			# $sp = $sp + 4
+    jr		$ra					# jump to $ra    
 
 check_apt:
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
