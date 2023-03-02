@@ -477,7 +477,11 @@ rm_morador:
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
-    # Verifica se é o primeiro morador
+    # Verifica se só há 1 morador
+    lw		$t1, 0($s1)		# 
+    subi	$t1, $t1, 1			# $t1 = $t1 - 1
+    bne		$t1, $zero, rm_morador_mais_de_um_morador	# if $t1 != $zero then goto rm_morador_mais_de_um_morador
+    # Verifica se é o primeiro e único morador
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $t7, 8			# $a1 = $t7 + 0
     jal		strcmp				# jump to strcmp and save position to $ra
