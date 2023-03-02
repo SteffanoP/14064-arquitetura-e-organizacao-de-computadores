@@ -23,6 +23,7 @@
 
     # rm_morador data
     cmd_rm_morador: .asciiz "rm_morador"
+    cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n"
     cmd_rm_morador_error_not_found: .asciiz "\nO Morador não foi encontrado nesse apartamento.\n"
 
     #ad_auto data
@@ -502,6 +503,27 @@ rm_morador:
     jal		search_morador_in_apt				# jump to search_morador_in_apt and save position to $ra
     beq		$v0, $zero, rm_morador_error_not_found	# if $v0 == $zero then goto rm_morador_error_not_found
 
+    # Remove o morador encontrado
+    # Faz a equação (último morador) = (quantidade de moradores * tamanho morador) + posição inicial de moradores
+    lw		$t0, 4($t7)		#
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    addi	$t1, $zero, 22			# $t1 = $zero + 22
+    mul     $t0, $t0, $t1
+    addi	$t0, $t0, 8			# $t0 = $t0 + 8
+    # Prepara a função delete_morador
+    addi	$a0, $v0, 0			# $a0 = $v0 + 0
+    add		$a1, $t7, $t0		# $a1 = $t7 + $t0
+    jal		delete_morador				# jump to delete_morador and save position to $ra
+
+    # Subtrai a quantidade total de moradores
+    lw		$t0, 4($t7)		# 
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    sw		$t0, 4($t7)		# 
+
+    # Faz o print de morador removido com sucesso
+    la		$t0, cmd_rm_morador_successfull_message		# 
+    write_shell($t0)
+
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 rm_morador_removes_last_morador:
@@ -902,6 +924,36 @@ store_morador:
     jal		strcpy				# jump to strcpy and save position to $ra
     lw		$ra, 0($sp)		# 
     addi	$sp, $sp, 4			# $sp = $sp + 4
+    jr		$ra					# jump to $ra
+
+delete_morador:
+    # $a0 => Endereço do morador no bloco do apartamento
+    # $a1 => Endereço do último morador no apartamento
+
+    # Armazena $ra e $a1 na stack
+    addi	$sp, $sp, -8			# $sp = $sp + -8
+    sw		$a1, 0($sp)		# 
+    sw		$ra, 4($sp)		#
+
+    # Preenche o endereço do morador a ser deletado com \0
+    addi	$a0, $a0, 0			# $a0 = $a0 + 0
+    addi	$a1, $zero, 22			# $a1 = $zero + 22
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    # Obtém $a1 da Stack
+    lw		$a1, 0($sp)		# 
+
+    # Copia último morador e coloca-o na posição do morador excluído
+    jal		strcpy				# jump to strcpy and save position to $ra
+
+    # Preenche o endereço do morador movido com \0
+    addi	$a0, $a1, 0			# $a0 = $a1 + 0
+    addi	$a1, $zero, 22			# $a1 = $zero + 22
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    # Pega $ra e volta para o retorno
+    lw		$ra, 4($sp)		# 
+    addi	$sp, $sp, 8			# $sp = $sp + 8
     jr		$ra					# jump to $ra
 
 # Função que calcula o tamanho de uma String até um separador
