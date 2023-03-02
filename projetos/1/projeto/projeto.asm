@@ -21,6 +21,9 @@
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
 
+    # rm_morador data
+    cmd_rm_morador: .asciiz "rm_morador"
+
     #ad_auto data
     cmd_ad_auto: .asciiz "ad_auto"
     cmd_ad_auto_type_moto: .asciiz "m"
@@ -135,6 +138,12 @@ process_command:
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
     jal		check_prefix		# jump to check_prefix and save position to $ra
     beq		$v0, $zero, ad_morador	# if $v0 == $zero then goto ad_morador
+
+    # Comando rm_auto
+    la		$a0, cmd_rm_morador	# 
+    addi	$a1, $s0, 0			# $a1 = $s0 + 0
+    jal		check_prefix		# jump to check_prefix and save position to $ra
+    beq		$v0, $zero, rm_morador	# if $v0 == $zero then goto rm_morador
 
     # Comando ad_auto
     la		$a0, cmd_ad_auto		# 
@@ -442,6 +451,14 @@ ad_auto_error_apt_not_found:
 
 ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
+rm_morador:
+    # Pula e armazena a entrada para rm_auto
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
