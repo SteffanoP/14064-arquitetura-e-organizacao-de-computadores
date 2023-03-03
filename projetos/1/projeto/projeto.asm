@@ -533,6 +533,9 @@ limpar_ap:
     write_shell($t3)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
+#  OBS: O "SLAVAR" FUNCIONA 100% APENAS QUANDO ADICIONADO 1 LINHA INTEIRA DE MORADORES + VEÍCULOS
+#  QUANDO VAI LER O BLOCO DE "PRÓXIMO ENDEREÇO" SE DEPARA COM LIXO NO INÍCIO E DEPOIS LER O PRÓXIMO 
+#  APARTAMENTO COMO DEVE. PORÉM, QUANDO TERMINA DE LER NÃO CONSIGO SAIR DO LOOP, OU SEJA, PROBLEMAS...
 salvar:
     # Alocação de memória
     addi	$a0, $0, 600		# 200 bytes to be allocated
