@@ -21,7 +21,7 @@
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
 
-    #ad_auto data
+    # ad_auto data
     cmd_ad_auto: .asciiz "ad_auto"
     cmd_ad_auto_type_moto: .asciiz "m"
     cmd_ad_auto_type_carro: .asciiz "c"
@@ -33,14 +33,24 @@
     cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n"
     cmd_ad_auto_error_not_enough_size: .asciiz "\nVocê não tem mais espaço disponível para o seu automóvel nesse apartamento!\n"
 
-    #rm_auto data
+    # rm_auto data
     cmd_rm_auto: .asciiz "rm_auto"
     cmd_rm_auto_successfull_message: .asciiz "\nAutomóvel removido com sucesso!\n"
     cmd_rm_auto_error_auto_not_found: .asciiz "\nNão foi possível encontrar o veículo informado para essa apartamento.\nTente novamente com o nome exato do veículo.\n"
 
-    #limpar_ap data
+    # limpar_ap data
     cmd_limpar_ap: .asciiz "limpar_ap"
     cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
+
+    # salvar
+    cmd_salvar: .asciiz "salvar"
+    cmd_salvar_colunas: .asciiz "Apartamento, Morador 1, Morador 2, Morador 3, Morador 4, Morador 5, Veiculo Tipo 1, Modelo 1, Cor 1, Veiculo Tipo 2, Modelo 2, Cor 2"
+    cmd_salvar_sucessfull_message: .asciiz "Dados salvos com sucesso."
+    cmd_salvar_file: .asciiz "C:/Users/julya/OneDrive/Documentos/Arquitetura/projeto_teste.csv"
+    cmd_salvar_sep_col: .asciiz "," # separador de colunas do arquivo
+    cmd_salvar_endline_file: .asciiz "\n" # quebra de linha do arquivo
+    .align 2 # dados do arquivo
+    cmd_salvar_data: .space 200
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -153,6 +163,12 @@ process_command:
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
     jal		check_prefix				# jump to check_prefix and save position to $ra
     beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto limpar_ap
+
+    # Comando salvar
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_salvar		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, salvar	# if $v0 == $zero then goto exit
 
     # Command help
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -295,6 +311,7 @@ ad_morador_into_existing_apt:
     addi	$a2, $t1, 0			# $a2 = $t1 + 0
     jal		store_morador				# jump to store_morador and save position to $ra
     
+    write_shell($s2)
     # Storing is successfull, than shall return success message and clear command
     la		$t0, nl		# 
     write_shell($t0) # Print of \n
@@ -515,6 +532,224 @@ limpar_ap:
     la		$t3, cmd_limpar_ap_successfull_message		# 
     write_shell($t3)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
+salvar:
+    # Alocação de memória
+    addi	$a0, $0, 600		# 200 bytes to be allocated
+    addi	$v0, $0, 9		# system call #9 - allocate memory
+    syscall					# execute
+    addi	$s4, $v0, 0			# $t0 = $v0 + 0
+
+    # Abre o arquivo
+	li $v0, 13
+	la $a0, cmd_salvar_file
+	la $a1, 1
+	syscall
+	addi $s3, $v0, 0
+
+	la $a3, cmd_salvar_colunas
+	la $t0, ($s2) # carrega o endereço da linked list
+	la $t1, ($a3) # carrega o endereço da string que contém as colunas do arquivo
+    la $t2, ($s4) # carrega o endereço da alocação de memória na heap
+    li $t3, 0 # flag indicando se o número do apartamento já foi lido
+	li $t4, 0 # flag indicando se o nome do morador já foi lido
+    li $t5, 0 # flag para finalizar a leitura
+
+loop_over_string_columns:
+    # leitura da string referente às colunas
+	lb $t6, 0($t1)
+	beq $t6, $zero, write_newline
+	sb $t6, ($t2)
+	addi $t1, $t1, 1
+	addi $t2, $t2, 1
+	
+	j loop_over_string_columns
+
+while_loop:
+    beq $t3, $zero, read_morador_apt
+    beq $t4, $zero, read_morador_name
+    # bne $t3, $zero, read_morador_auto_type
+    beq $t9, $zero, read_morador_auto_type
+    beq $t5, $zero, write_newline
+
+    j write_file
+
+read_morador_apt:
+    lb $t3, 0($t0) # carregamento do número do andar em $t3
+    sb $t3, ($t2) # armazena $t3 em $t2 (heap)
+    addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
+
+    lb $t3, 1($t0) # carrega o número do apartamento em $t3
+    sb $t3, ($t2) # armazena $t3 em $t2 (heap)
+    addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
+
+    addi $t7, $t7, 44 # carrega o valor do caractere ','
+    sb $t7, ($t2) # armazena a ',' em $t2 (heap)
+	addi $t2, $t2, 1 # avança uma coluna na heap
+	sll $t7, $0, 4 # seta $t7 para 0
+
+    li $t3, 1 # altera a bandeira $t3 para 1, pois o núemro do apartamento já foi lido
+    la $t0, ($s2)
+    j while_loop
+
+read_morador_name:
+    sll $t3, $0, 4 # seta $t3 para 0
+    lb $t3, 8($t0) # carrega byte por byte do nome do(a) morador(a) a partir do offset 8, onde o nome começa
+    beq $t3, $zero, name_read # se $t3 == 0 então vai para 'name_read', ou seja, o nome do(a) morador(a) já foi lido
+
+    sll $t7, $0, 4
+    sb $t3, ($t2) # armazena $t3 em $t2 (heap)
+    addi $t2, $t2, 1 # avança uma coluna em $t2
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+   
+    j read_morador_name
+
+name_read: # $t7 => $t6 e $t9 => $t7
+    beq $t7, 1, loop_over_linked_list
+
+    sll $t6, $0, 4 # limpa $t6 para 0
+    addi $t6, $t6, 44 # carrega o valor do caractere ','
+    sb $t6, ($t2) # armazena a ',' em $t2 (heap)
+	sll $t6, $0, 4 # limpa $t6 para 0
+	addi $t2, $t2, 1 # avança uma coluna
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+    
+    li $t7, 1
+    j read_morador_name
+
+read_morador_auto_type:
+    beq $t6, 1, read_morador_auto_detail
+
+    sll $t3, $0, 4 # seta $t3 para 0
+    lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
+
+    sb $t3, ($t2) # armazena $t3 em $t2 (heap)
+    addi $t2, $t2, 1
+    sll $t6, $0, 4 # limpa $t6 para 0
+    addi $t6, $t6, 44 # carrega o valor do caractere ','
+    sb $t6, ($t2) # armazena a ',' em $t2 (heap)
+
+	sll $t6, $0, 4 # limpa $t6 para 0
+	addi $t2, $t2, 1 # avança uma coluna na heap
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+    li $t6, 1
+
+    j read_morador_auto_type				# jump to read_morador_auto_type
+
+read_morador_auto_detail:
+    sll $t3, $0, 4 # seta $t3 para 0
+    lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
+    beq $t3, $zero, auto_name_read
+
+    sb $t3, ($t2) # armazena $t3 em $t2 (heap)
+    addi $t2, $t2, 1 # avança uma coluna na heap
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+
+    j read_morador_auto_detail
+
+auto_name_read:
+    beq $t7, 1, loop_over_list
+    sll $t6, $0, 4 # limpa $t6 para 0
+    addi $t6, $t6, 44 # carrega o valor do caractere ','
+    sb $t6, ($t2) # armazena a ',' em $t2 (heap)
+	sll $t6, $0, 4 # limpa $t6 para 0
+	addi $t2, $t2, 1 # avança uma coluna
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+
+    addi $t7, $t7, 1
+
+    j read_morador_auto_detail
+
+loop_over_list:
+    bne $t3, $zero, set_flag
+
+    # final da linked list
+    la $t9, ($s2)
+    addi $t9, $t9, 200
+    li $t3, 1
+    beq $t0, $t9, write_newline
+
+    # final de um bloco de moradores + veículo(s), então, adiciona um nova linha para salvar os próximos endereços
+    la $t4, ($s2)
+    addi $t4, $t4, 186
+    sll $t3, $0, 4
+    beq $t0, $t4, write_new_line
+
+    sll $t9, $0, 4
+    sll $t3, $0, 4
+    sll $t4, $0, 4
+
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+    lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
+    sll $t7, $0, 4 # seta $t7 para 0
+
+    j loop_over_list
+
+set_flag:
+    li $t4, 1
+    # li $t3, 1
+    j read_morador_auto_detail
+
+loop_over_linked_list:
+    bne $t3, $zero, count_morador
+
+    la $t9, ($s2)
+    addi $t9, $t9, 110
+    li $t3, 1
+    beq $t0, $t9, while_loop
+    sll $t9, $0, 4
+    sll $t3, $0, 4
+
+    addi $t0, $t0, 1 # avança uma posição da linked list em $t0
+    lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
+    sll $t7, $0, 4 # seta $t7 para 0
+    j loop_over_linked_list
+
+count_morador:
+    lw $t8, 4($s2)
+    addi $s5, $s5, 1
+    li $t4, 1
+    # li $t3, 1
+    beq $t8, $s5, while_loop
+    j read_morador_name
+
+write_newline:
+	addi $t6, $t6, 10 # carrega o '\n' em $t6
+	sb $t6, ($t2) # armazena o '\n' na heap
+	addi $t2, $t2, 1 # avança uma coluna na heap
+    addi $t0, $t0, 1 # avança uma posição na linked list
+    sll $t6, $0, 4 # seta $t6 para 0
+    sll $t4, $0, 4 # seta $t4 para 0
+    li $t5, 1 # altera a bandeira $t5 para 1
+    li $t9, 1
+
+    j while_loop
+
+write_new_line:
+	addi $t6, $t6, 10 # carrega o '\n' em $t6
+	sb $t6, ($t2) # armazena o '\n' na heap
+	addi $t2, $t2, 1 # avança uma coluna na heap
+    addi $t0, $t0, 1 # avança uma posição na linked list
+    sll $t6, $0, 4 # seta $t6 para 0
+    # sll $t4, $0, 4 # seta $t4 para 0
+    # li $t5, 1 # altera a bandeira $t5 para 1
+    # li $t9, 1
+
+    j read_morador_name
+
+write_file:
+    addi $a0, $s3, 0
+    
+    la $a1, ($s4)
+    li $a2, 600
+    li $v0, 15
+    syscall 
+
+    addi $a0, $s3, 0
+    li $v0, 16
+    syscall
+
+    j write_current_shell_cmd
 
 help:
     la		$t0, std_help		# 
