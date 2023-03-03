@@ -47,6 +47,7 @@
     cmd_info_ap_error_format: .asciiz "\nFalha, apartamento inválido. O info_ap não foi escrito de maneira correta. Verifique se o comando está no formato info_ap-<option1>.\n"
     cmd_info_ap_apt_is_empty: "\nEste apartamento encontra-se vazio. Não é possível obter informações do apartamento solicitado.\n"
     cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
+    cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -527,43 +528,54 @@ limpar_ap:
 
     la		$t3, cmd_limpar_ap_successfull_message		# 
     write_shell($t3)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd  3 0 43253253
 
 # Função que mostra a informação do apartamento
 info_ap:
-    # Pula e Armazena a entrada para limpar_ap
+    # Pula e Armazena a entrada para info_ap
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix				# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
-
-    # Verifica se o apartamento está cadastrado no condomínio
-    addi $a0, $t6, 0
-    addi $a1, $s2, 0
-    jal search_if_apt_exists
-    beq $v0, $zer0, info_ap_apt_is_empty
 
     # Verifica o formato X0Z do número do apartamento
     lb		$t0, 1($v0)		# Carrega um char na posição onde deveria estar o separador de X e Z
     lb		$t1, sep_apt_number		# Carrega o separador do andar (X) e apartamentos (Z), que é o '0'
     bne		$t0, $t1, info_ap_error_format	# se $t0 != $t1 vá para info_ap_error_format
-
+    
     # Verifica se o andar é válido ([0,9])
     lb		$t0, 0($v0)		# Carrega um char na posição onde deveria ser o andar
     subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Converter de char para decimal
     slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => Verifica se é menor que 10
     beq		$t0, $zero, info_ap_error_invalid_floor	# se $t0 == $zero vá para info_ap_error_invalid_floor
 
-# continuar aqui!!
+    # Check format -<option1>  OBS: Não possui um limite para os apartamentos [1:4]. Verificar como fazer.
+    lb		$t0, 3($v0)		# 
+    lb		$t1, sep_args	#
+    beq		$t0, $t1, info_ap_error_format_2
 
+    # Verifica se o apartamento está cadastrado no condomínio
+     addi $a0, $v0, 0
+     addi $a1, $s2, 0
+     jal search_if_apt_exists
+     beq $v0, $zero, info_ap_apt_is_empty
+
+    
+
+   
+# continuar aqui!!
 
 
 info_ap_apt_is_empty:
     print_error(cmd_info_ap_apt_is_empty)
-    j           write_current_shell_cmd         # jump to write_current_shell_cmd
+    j           write_current_shell_cmd         # jump to write_current_shell_cmd #mudar para clear_current_shell
 
 info_ap_error_format:
     print_error(cmd_info_ap_error_format)
-    jal         write_current_shell_cmd         # jump to write_current_shell_cmd
+    j        write_current_shell_cmd         # jump to write_current_shell_cmd
+
+    info_ap_error_format_2:
+    print_error(cmd_info_ap_error_format_2)
+    j       write_current_shell_cmd
 
 info_ap_error_invalid_floor:
     print_error(cmd_info_ap_error_invalid_floor)
