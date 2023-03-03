@@ -235,8 +235,15 @@ ad_morador:
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
-    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt    
+    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt
 
+    # Antes de alocar um novo bloco de memória, verifica se há endereços disponíveis na stack
+    lw		$t0, 0($sp)		# 
+    beq		$t0, $zero, ad_morador_allocate_memory	# if $t0 == $zero then goto ad_morador_allocate_memory
+    addi	$sp, $sp, 4			# $sp = $sp + 4
+    j		ad_morador_store_object_in_ll				# jump to ad_morador_store_object_in_ll
+
+    ad_morador_allocate_memory:
     # A partir daqui aloca um novo bloco de memória para o apartamento
     # Allocate necessary space to store object
     # Allocate 200 of bytes in memory
@@ -244,7 +251,8 @@ ad_morador:
     addi	$v0, $0, 9		# system call #9 - allocate memory
     syscall					# execute
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
-
+    
+    ad_morador_store_object_in_ll:
     # Store object in linked list    
     addi	$t1, $s2, 0			# $t1 = $s2 + 0
     bne		$s2, $zero, ad_morador_check_where_to_store	# if $s2 != $zero then goto ad_morador_check_where_to_store
@@ -659,7 +667,7 @@ limpar_ap:
 
     # Salva o endereço na Stack para usar em na criação de um novo apartamento
     addi	$sp, $sp, -4			# $sp = $sp + -4
-    sw		$t1, 0($sp)		# 
+    sw		$a0, 0($sp)		# 
 
     la		$t3, cmd_limpar_ap_successfull_message		# 
     write_shell($t3)
