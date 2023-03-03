@@ -455,6 +455,7 @@ ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
+# Função que remove um morador de um apartamento
 rm_morador:
     # Pula e armazena a entrada para rm_auto
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -542,31 +543,70 @@ rm_auto:
     # Pula e armazena a entrada para rm_auto
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
-    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+    addi	$s4, $v0, 0			# $t0 = $v0 + 0
 
     # Verifica se o apartamento está cadastrado no condomínio
-    addi	$a0, $t6, 0			# $a0 = $t6 + 0 | 303-XXXXXXXX
+    addi	$a0, $s4, 0			# $a0 = $s4 + 0 | 303-XXXXXXXX
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
     beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
     # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
     addi	$t7, $v0, 0			# $t1 = $v0 + 0
 
-    # Pula o número do apartamento para o nome do veículo
-    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    # TODO: Verificar se entrada tem os prefixos corretos
+    # Pula o número do apartamento para o tipo do veículo
+    addi	$a0, $s4, 0			# $a0 = $s4 + 0
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
-    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+    addi	$s4, $v0, 0			# $s4 = $v0 + 0
+    # Pula o tipo do veículo para o nome do veículo
+    addi	$a0, $s4, 0			# $a0 = $t6 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t6 = $v0 + 0
+    #Pula do nome do veículo para a cor
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    addi	$s5, $v0, 0			# $s5 = $v0 + 0
 
     # Verifica se deseja remover o primeiro veículo
+    # Verifica se é do mesmo tipo
+    lb		$t0, 0($s4)		# 
+    lb		$t1, 118($t7)		# 
+    bne		$t0, $t1, rm_auto_1st_auto_wrong_color	# if $t0 != $t7 then goto rm_auto_1st_auto_wrong_color
+    # Verifica a cor do veículo
+    addi	$a0, $t7, 140			# $a0 = $t7 + 140
+    addi	$a1, $s5, 0			# $a1 = $s5 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    bne		$v0, $zero, rm_auto_1st_auto_wrong_color	# if $v0 != $zero then goto rm_auto_1st_auto_wrong_color
+    # Verifica se é o modelo do carro
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    addi	$a3, $v0, 0			# $a2 = $v0 + 0    
     addi	$a0, $t7, 119		# $t7 = $t7 + 119
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
-    jal		strcmp				# jump to strcmp and save position to $ra
+    jal		strncmp				# jump to strncmp and save position to $ra
     beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
 
+    rm_auto_1st_auto_wrong_color:
+
     # Verifica se deseja remover o segundo veículo
+    # Verifica se é do mesmo tipo
+    lb		$t0, 0($s4)		# 
+    lb		$t1, 156($t7)		# 
+    bne		$t0, $t1, rm_auto_error_auto_not_found	# if $t0 != $t7 then goto rm_auto_1st_auto_wrong_color
+    # Verifica primeiro a cor do veículo
+    addi	$a0, $t7, 178			# $a0 = $t7 + 178
+    addi	$a1, $s5, 0			# $a1 = $s5 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    bne		$v0, $zero, rm_auto_error_auto_not_found	# if $v0 != $zero then goto rm_auto_error_auto_not_found
+    # Verifica se é o modelo do carro
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    addi	$a3, $v0, 0			# $a2 = $v0 + 0  
     addi	$a0, $t7, 157		# $t7 = $t7 + 119
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
-    jal		strcmp				# jump to strcmp and save position to $ra
+    jal		strncmp				# jump to strncmp and save position to $ra
     beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
 
     j		rm_auto_error_auto_not_found				# jump to rm_auto_error_auto_not_found
