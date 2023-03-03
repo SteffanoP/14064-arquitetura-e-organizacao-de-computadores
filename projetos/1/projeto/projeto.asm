@@ -641,8 +641,16 @@ limpar_ap:
     # Atualiza o link anterior para excluir o nó da lista ligada
     addi	$t1, $v0, 0			# $t1 = $v0 + 0
     addi	$t2, $v1, 0			# $t2 = $v1 + 0
+    # Caso esteja na cabeça do link, trata diretamente com o registrador $s2
     lw		$t3, 196($t1)		# 
+    bne		$t2, $zero, limpar_ap_not_in_s2	# if $t2 != $zero then goto limpar_ap_not_in_s2 | 
+    addi	$s2, $t3, 0			# $s2 = $t3 + 0
+    j		limpar_ap_in_s2_continue				# jump to limpar_ap_in_s2_continue
+
+    limpar_ap_not_in_s2:
     sw		$t3, 196($t2)		# 
+
+    limpar_ap_in_s2_continue:
 
     # Limpa todo o bloco com null bytes
     addi	$a0, $t1, 0			# $a0 = $t1 + 0
