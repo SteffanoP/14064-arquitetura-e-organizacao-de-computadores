@@ -49,6 +49,11 @@
 
     # info_geral data
     cmd_info_geral: .asciiz "info_geral"
+    cmd_info_geral_message_nao_vazios: .asciiz "\nNão vazios:\t"
+    cmd_info_geral_message_percentage_1: .asciiz " ("
+    cmd_info_geral_message_percentage_2: .asciiz "%).\n"
+    cmd_info_geral_message_vazios: .asciiz "Vazios:\t\t"
+
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
 
@@ -680,6 +685,48 @@ limpar_ap:
     write_shell($t3)
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
+info_geral:
+    
+    la		$t0, cmd_info_geral_message_nao_vazios		# 
+    write_shell($t0)
+
+    # Allocate 256 of bytes in memory
+    addi	$a0, $0, 256		# 256 bytes to be allocated
+    addi	$v0, $0, 9		# system call #9 - allocate memory
+    syscall					# execute
+    addi	$s1, $v0, 0			# $s1 = $v0 + 0
+    
+    addi	$a0, $s2, 0			# $a0 = $s2 + 0
+    jal		calculate_links_on_ll				# jump to calculate_links_on_ll and save position to $ra
+    addi	$s3, $v0, 0			# $a0 = $v0 + 0
+    addi	$a0, $s3, 0			# $a0 = $s3 + 0
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0 
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_1		# 
+    write_shell($t0)
+
+    la		$t0, cmd_info_geral_message_percentage_2		# 
+    write_shell($t0)
+    
+    la		$t0, cmd_info_geral_message_vazios		# 
+    write_shell($t0)
+
+    addi	$t0, $zero, 40			# $t0 = $zero + 40
+    sub		$a0, $t0, $s3		# $a0 = $t0 - $s3
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_1		# 
+    write_shell($t0)
+
+    la		$t0, cmd_info_geral_message_percentage_2		# 
+    write_shell($t0)
+    
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
 help:
     la		$t0, std_help		# 
     write_shell($t0)
@@ -1118,3 +1165,100 @@ fill_with_null_byte_loop:
 
 fill_with_null_byte_finish:
     jr		$ra					# jump to $ra
+
+calculate_links_on_ll:
+    # $a0 => cabeça da lista ligada
+    # $v0 => quantidade de links
+    addi	$t0, $zero, 0			# $t0 = $zero + 0
+    addi	$t1, $a0, 0			# $t1 = $a0 + 0
+    
+    beq		$t1, $zero, calculate_links_on_ll_finish	# if $t1 == $zero then goto calculate_links_on_ll_finish
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    
+calculate_links_on_ll_loop:
+    lw		$t2, 196($t1)		#
+    beq		$t2, $zero, calculate_links_on_ll_finish	# if $t2 == $zero then goto calculate_links_on_ll_finish
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    jump_to_next_ll($t1)
+    j		calculate_links_on_ll_loop				# jump to calculate_links_on_ll_loop    
+    
+calculate_links_on_ll_finish:
+    addi	$v0, $t0, 0			# $v0 = $t0 + 0
+    jr		$ra					# jump to $ra
+
+calculate_info_geral_percentage:
+    # $a0 => quantidade de apartamentos ocupados
+    # $v0 => Porcentagem de ocupados
+    # $v1 => Porcentagem de vazios
+    addi	$t0, $zero, 40			# $t0 = $zero + 40
+    sub		$t1, $t0, $a0		# $t1 = $t0 - $a0
+    
+    div		$t1, $t0			# $t1 / $t0
+    mflo	$t2					# $t2 = floor($t1 / $t0) 
+    mfhi	$t3					# $t3 = $t1 % $t0 
+
+    addi	$t4, $zero, 100			# $t4 = $zero + 100
+    mul     $v0, $t2, $t4       # $v0 = $t2 * $t4
+    sub		$v1, $t4, $v0		# $v1 = $t4 - $v0
+    
+    jr		$ra					# jump to $ra    
+
+# inputs : $a0 -> integer to convert
+#          $a1 -> address of string where converted number will be kept
+# outputs: none
+int2str:
+addi $sp, $sp, -4         # to avoid headaches save $t- registers used in this procedure on stack
+sw   $t0, ($sp)           # so the values don't change in the caller. We used only $t0 here, so save that.
+bltz $a0, neg_num         # is num < 0 ?
+j    next0                # else, goto 'next0'
+
+neg_num:                  # body of "if num < 0:"
+li   $t0, '-'
+sb   $t0, ($a1)           # *str = ASCII of '-' 
+addi $a1, $a1, 1          # str++
+li   $t0, -1
+mul  $a0, $a0, $t0        # num *= -1
+
+next0:
+li   $t0, -1
+addi $sp, $sp, -4         # make space on stack
+sw   $t0, ($sp)           # and save -1 (end of stack marker) on MIPS stack
+
+push_digits:
+blez $a0, next1           # num < 0? If yes, end loop (goto 'next1')
+li   $t0, 10              # else, body of while loop here
+div  $a0, $t0             # do num / 10. LO = Quotient, HI = remainder
+mfhi $t0                  # $t0 = num % 10
+mflo $a0                  # num = num // 10  
+addi $sp, $sp, -4         # make space on stack
+sw   $t0, ($sp)           # store num % 10 calculated above on it
+j    push_digits          # and loop
+
+next1:
+lw   $t0, ($sp)           # $t0 = pop off "digit" from MIPS stack
+addi $sp, $sp, 4          # and 'restore' stack
+
+bltz $t0, neg_digit       # if digit <= 0, goto neg_digit (i.e, num = 0)
+j    pop_digits           # else goto popping in a loop
+
+neg_digit:
+li   $t0, '0'
+sb   $t0, ($a1)           # *str = ASCII of '0'
+addi $a1, $a1, 1          # str++
+j    next2                # jump to next2
+
+pop_digits:
+bltz $t0, next2           # if digit <= 0 goto next2 (end of loop)
+addi $t0, $t0, '0'        # else, $t0 = ASCII of digit
+sb   $t0, ($a1)           # *str = ASCII of digit
+addi $a1, $a1, 1          # str++
+lw   $t0, ($sp)           # digit = pop off from MIPS stack 
+addi $sp, $sp, 4          # restore stack
+j    pop_digits           # and loop
+
+next2:
+sb  $zero, ($a1)          # *str = 0 (end of string marker)
+
+lw   $t0, ($sp)           # restore $t0 value before function was called
+addi $sp, $sp, 4          # restore stack
+jr  $ra                   # jump to caller
