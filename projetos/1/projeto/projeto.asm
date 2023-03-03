@@ -47,6 +47,8 @@
     cmd_limpar_ap: .asciiz "limpar_ap"
     cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
 
+    # info_geral data
+    cmd_info_geral: .asciiz "info_geral"
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
 
@@ -164,6 +166,12 @@ process_command:
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
     jal		check_prefix				# jump to check_prefix and save position to $ra
     beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto limpar_ap
+
+    # Comando info_geral
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_info_geral		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, info_geral	# if $v0 == $zero then goto info_geral
 
     # Command help
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -633,7 +641,6 @@ rm_auto_error_auto_not_found:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que limpa o apartamento
-# TODO: É necessário tratar para quando só há um morador.
 limpar_ap:
     # Pula e Armazena a entrada para limpar_ap
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
