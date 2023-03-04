@@ -21,6 +21,11 @@
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
 
+    # rm_morador data
+    cmd_rm_morador: .asciiz "rm_morador"
+    cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n"
+    cmd_rm_morador_error_not_found: .asciiz "\nO Morador não foi encontrado nesse apartamento.\n"
+
     #ad_auto data
     cmd_ad_auto: .asciiz "ad_auto"
     cmd_ad_auto_type_moto: .asciiz "m"
@@ -48,6 +53,18 @@
     cmd_info_ap_apt_is_empty: "\nEste apartamento encontra-se vazio. Não é possível obter informações do apartamento solicitado.\n"
     cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
     cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>"
+    cmd_info_ap_message_ap: .asciiz "\nAP: "
+    cmd_info_ap_message_moradores: .asciiz "\nMoradores: "
+    cmd_info_ap_message_carro: .asciiz "\nCarro: \nModelo: "
+    cmd_info_ap_message_moto: .asciiz "\nMoto: \nModelo: "
+    cmd_info_ap_message_cor: .asciiz "\nCor: "
+
+    # info_geral data
+    cmd_info_geral: .asciiz "info_geral"
+    cmd_info_geral_message_nao_vazios: .asciiz "\nNão vazios:\t"
+    cmd_info_geral_message_percentage_1: .asciiz " ("
+    cmd_info_geral_message_percentage_2: .asciiz "%).\n"
+    cmd_info_geral_message_vazios: .asciiz "Vazios:\t\t"
 
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
@@ -143,6 +160,12 @@ process_command:
     jal		check_prefix		# jump to check_prefix and save position to $ra
     beq		$v0, $zero, ad_morador	# if $v0 == $zero then goto ad_morador
 
+    # Comando rm_auto
+    la		$a0, cmd_rm_morador	# 
+    addi	$a1, $s0, 0			# $a1 = $s0 + 0
+    jal		check_prefix		# jump to check_prefix and save position to $ra
+    beq		$v0, $zero, rm_morador	# if $v0 == $zero then goto rm_morador
+
     # Comando ad_auto
     la		$a0, cmd_ad_auto		# 
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
@@ -167,6 +190,12 @@ process_command:
     jal     check_prefix
     beq     $v0, $zero, info_ap
 
+    # Comando info_geral
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_info_geral		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, info_geral	# if $v0 == $zero then goto info_geral
+
     # Command help
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_help		# 
@@ -189,6 +218,13 @@ write_current_shell_cmd:
     write_shell($s0)
 
     j		main				# jump to main
+
+clear_current_shell_cmd:
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    addi	$a1, $zero, 64			# $a1 = $zero + 64
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
 # Função que adiciona morador ao condomínio
 ad_morador:
@@ -230,8 +266,15 @@ ad_morador:
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
     jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
-    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt    
+    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt
 
+    # Antes de alocar um novo bloco de memória, verifica se há endereços disponíveis na stack
+    lw		$t0, 0($sp)		# 
+    beq		$t0, $zero, ad_morador_allocate_memory	# if $t0 == $zero then goto ad_morador_allocate_memory
+    addi	$sp, $sp, 4			# $sp = $sp + 4
+    j		ad_morador_store_object_in_ll				# jump to ad_morador_store_object_in_ll
+
+    ad_morador_allocate_memory:
     # A partir daqui aloca um novo bloco de memória para o apartamento
     # Allocate necessary space to store object
     # Allocate 200 of bytes in memory
@@ -239,7 +282,8 @@ ad_morador:
     addi	$v0, $0, 9		# system call #9 - allocate memory
     syscall					# execute
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
-
+    
+    ad_morador_store_object_in_ll:
     # Store object in linked list    
     addi	$t1, $s2, 0			# $t1 = $s2 + 0
     bne		$s2, $zero, ad_morador_check_where_to_store	# if $s2 != $zero then goto ad_morador_check_where_to_store
@@ -287,7 +331,7 @@ ad_morador_store_morador:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_into_existing_apt:
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
@@ -313,31 +357,31 @@ ad_morador_into_existing_apt:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_1:
     print_error(cmd_ad_morador_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_2:
     print_error(cmd_ad_morador_error_format_2)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_floor:
     print_error(cmd_ad_morador_error_invalid_floor)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_apartment:
     print_error(cmd_ad_morador_error_invalid_apartament)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_name_size:
     print_error(cmd_ad_morador_error_invalid_name_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_apt_is_full:
     print_error(cmd_ad_morador_error_apt_is_full)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que adiciona um automóvel a um apartamento
 ad_auto:
@@ -424,38 +468,43 @@ ad_auto:
     addi	$a1, $v0, 0			# $a1 = $v0 + 0
     jal		store_auto				# jump to store_auto and save position to $ra
 
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_format_1:
     print_error(cmd_ad_auto_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_auto_type:
     print_error(cmd_ad_auto_error_invalid_type_auto)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_modelo_size:
     print_error(cmd_ad_auto_error_invalid_modelo_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
     
 ad_auto_error_invalid_cor_size:
     print_error(cmd_ad_auto_error_invalid_cor_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_apt_not_found:
     print_error(cmd_ad_auto_error_apt_not_found)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
-# Remove um automóvel de um apartamento
-rm_auto:
+# Função que remove um morador de um apartamento
+rm_morador:
     # Pula e armazena a entrada para rm_auto
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
+
+    # Check format <option1>-<option2>
+    lb		$t0, 3($v0)		# 
+    lb		$t1, sep_args	#
+    bne		$t0, $t1, ad_morador_error_format_1	# if $t0 != $t1 then goto ad_morador_error_format
 
     # Verifica se o apartamento está cadastrado no condomínio
     addi	$a0, $t6, 0			# $a0 = $t6 + 0 | 303-XXXXXXXX
@@ -465,21 +514,138 @@ rm_auto:
     # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
     addi	$t7, $v0, 0			# $t1 = $v0 + 0
 
-    # Pula o número do apartamento para o nome do veículo
+    # Pula o número do apartamento para o nome do morador
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     jal		jump_prefix			# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
+    # Verifica se só há 1 morador
+    lw		$t1, 0($s1)		# 
+    subi	$t1, $t1, 1			# $t1 = $t1 - 1
+    bne		$t1, $zero, rm_morador_mais_de_um_morador	# if $t1 != $zero then goto rm_morador_mais_de_um_morador
+    # Verifica se é o primeiro e único morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 8			# $a1 = $t7 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto target
+    
+    rm_morador_mais_de_um_morador:
+
+    # Verifica se é o último morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 96			# $a1 = $t7 + 96
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, rm_morador_removes_last_morador	# if $v0 == $zero then goto rm_morador_removes_last_morador
+
+    # Pesquisa pelo morador
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    addi	$a1, $t7, 0			# $a1 = $t7 + 0
+    jal		search_morador_in_apt				# jump to search_morador_in_apt and save position to $ra
+    beq		$v0, $zero, rm_morador_error_not_found	# if $v0 == $zero then goto rm_morador_error_not_found
+
+    # Remove o morador encontrado
+    # Faz a equação (último morador) = (quantidade de moradores * tamanho morador) + posição inicial de moradores
+    lw		$t0, 4($t7)		#
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    addi	$t1, $zero, 22			# $t1 = $zero + 22
+    mul     $t0, $t0, $t1
+    addi	$t0, $t0, 8			# $t0 = $t0 + 8
+    # Prepara a função delete_morador
+    addi	$a0, $v0, 0			# $a0 = $v0 + 0
+    add		$a1, $t7, $t0		# $a1 = $t7 + $t0
+    jal		delete_morador				# jump to delete_morador and save position to $ra
+
+    # Subtrai a quantidade total de moradores
+    lw		$t0, 4($t7)		# 
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    sw		$t0, 4($t7)		# 
+
+    # Faz o print de morador removido com sucesso
+    la		$t0, cmd_rm_morador_successfull_message		# 
+    write_shell($t0)
+
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
+rm_morador_removes_last_morador:
+    addi	$a0, $t7, 96			# $a0 = $t7 + 96
+    addi	$a1, $zero, 21			# $a1 = $zero + 21
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+    
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
+rm_morador_error_not_found:
+    print_error(cmd_rm_morador_error_not_found)
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
+# Remove um automóvel de um apartamento
+rm_auto:
+    # Pula e armazena a entrada para rm_auto
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$s4, $v0, 0			# $t0 = $v0 + 0
+
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi	$a0, $s4, 0			# $a0 = $s4 + 0 | 303-XXXXXXXX
+    addi	$a1, $s2, 0			# $a1 = $s2 + 0
+    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
+    beq		$v0, $zero, ad_auto_error_apt_not_found	# if $v0 == $zero then goto ad_auto_error_apt_not_found
+    # Se cadastrado vamos armazenar o endereço do bloco da lista ligada em $t7
+    addi	$t7, $v0, 0			# $t1 = $v0 + 0
+
+    # TODO: Verificar se entrada tem os prefixos corretos
+    # Pula o número do apartamento para o tipo do veículo
+    addi	$a0, $s4, 0			# $a0 = $s4 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$s4, $v0, 0			# $s4 = $v0 + 0
+    # Pula o tipo do veículo para o nome do veículo
+    addi	$a0, $s4, 0			# $a0 = $t6 + 0
+    jal		jump_prefix			# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t6 = $v0 + 0
+    #Pula do nome do veículo para a cor
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    addi	$s5, $v0, 0			# $s5 = $v0 + 0
+
     # Verifica se deseja remover o primeiro veículo
+    # Verifica se é do mesmo tipo
+    lb		$t0, 0($s4)		# 
+    lb		$t1, 118($t7)		# 
+    bne		$t0, $t1, rm_auto_1st_auto_wrong_color	# if $t0 != $t7 then goto rm_auto_1st_auto_wrong_color
+    # Verifica a cor do veículo
+    addi	$a0, $t7, 140			# $a0 = $t7 + 140
+    addi	$a1, $s5, 0			# $a1 = $s5 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    bne		$v0, $zero, rm_auto_1st_auto_wrong_color	# if $v0 != $zero then goto rm_auto_1st_auto_wrong_color
+    # Verifica se é o modelo do carro
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    addi	$a3, $v0, 0			# $a2 = $v0 + 0    
     addi	$a0, $t7, 119		# $t7 = $t7 + 119
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
-    jal		strcmp				# jump to strcmp and save position to $ra
+    jal		strncmp				# jump to strncmp and save position to $ra
     beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
 
+    rm_auto_1st_auto_wrong_color:
+
     # Verifica se deseja remover o segundo veículo
+    # Verifica se é do mesmo tipo
+    lb		$t0, 0($s4)		# 
+    lb		$t1, 156($t7)		# 
+    bne		$t0, $t1, rm_auto_error_auto_not_found	# if $t0 != $t7 then goto rm_auto_1st_auto_wrong_color
+    # Verifica primeiro a cor do veículo
+    addi	$a0, $t7, 178			# $a0 = $t7 + 178
+    addi	$a1, $s5, 0			# $a1 = $s5 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    bne		$v0, $zero, rm_auto_error_auto_not_found	# if $v0 != $zero then goto rm_auto_error_auto_not_found
+    # Verifica se é o modelo do carro
+    addi	$a0, $t6, 0			# $a0 = $t6 + 0
+    lb		$a1, sep_args		# 
+    jal		strlen_until_sep				# jump to strlen_until_sep and save position to $ra
+    addi	$a3, $v0, 0			# $a2 = $v0 + 0  
     addi	$a0, $t7, 157		# $t7 = $t7 + 119
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
-    jal		strcmp				# jump to strcmp and save position to $ra
+    jal		strncmp				# jump to strncmp and save position to $ra
     beq		$v0, $zero, rm_auto_delete_auto	# if $v0 == $zero then goto rm_auto_delete_auto
 
     j		rm_auto_error_auto_not_found				# jump to rm_auto_error_auto_not_found
@@ -491,12 +657,11 @@ rm_auto_delete_auto:
     
     la		$t0, cmd_rm_auto_successfull_message		# 
     write_shell($t0)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 rm_auto_error_auto_not_found:
     print_error(cmd_rm_auto_error_auto_not_found)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
-
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que limpa o apartamento
 limpar_ap:
@@ -514,8 +679,16 @@ limpar_ap:
     # Atualiza o link anterior para excluir o nó da lista ligada
     addi	$t1, $v0, 0			# $t1 = $v0 + 0
     addi	$t2, $v1, 0			# $t2 = $v1 + 0
+    # Caso esteja na cabeça do link, trata diretamente com o registrador $s2
     lw		$t3, 196($t1)		# 
+    bne		$t2, $zero, limpar_ap_not_in_s2	# if $t2 != $zero then goto limpar_ap_not_in_s2 | 
+    addi	$s2, $t3, 0			# $s2 = $t3 + 0
+    j		limpar_ap_in_s2_continue				# jump to limpar_ap_in_s2_continue
+
+    limpar_ap_not_in_s2:
     sw		$t3, 196($t2)		# 
+
+    limpar_ap_in_s2_continue:
 
     # Limpa todo o bloco com null bytes
     addi	$a0, $t1, 0			# $a0 = $t1 + 0
@@ -524,11 +697,12 @@ limpar_ap:
 
     # Salva o endereço na Stack para usar em na criação de um novo apartamento
     addi	$sp, $sp, -4			# $sp = $sp + -4
-    sw		$t1, 0($sp)		# 
+    sw		$a0, 0($sp)		# 
 
     la		$t3, cmd_limpar_ap_successfull_message		# 
     write_shell($t3)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd  3 0 43253253
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+
 
 # Função que mostra a informação do apartamento
 info_ap:
@@ -549,44 +723,180 @@ info_ap:
     beq		$t0, $zero, info_ap_error_invalid_floor	# se $t0 == $zero vá para info_ap_error_invalid_floor
 
     # Check format -<option1>  OBS: Não possui um limite para os apartamentos [1:4]. Verificar como fazer.
-    lb		$t0, 3($v0)		# 
-    lb		$t1, sep_args	#
-    beq		$t0, $t1, info_ap_error_format_2
+    lb		$t0, 3($v0)		# carrega o endereço 3 de v0 em t0 byte por byte
+    lb		$t1, sep_args	# carrega a função sep_args em t1 byte por byte
+    beq		$t0, $t1, info_ap_error_format_2 # se t1 == t0, vá para info_ap_error_format_2
 
     # Verifica se o apartamento está cadastrado no condomínio
-     addi $a0, $v0, 0
-     addi $a1, $s2, 0
-     jal search_if_apt_exists
-     beq $v0, $zero, info_ap_apt_is_empty
+    addi    $a0, $v0, 0                         # a0 = v0 + 0
+    addi    $a1, $s2, 0                         # a1 = s2 + 0
+    jal     search_if_apt_exists                # faz um jal para verificar se o apartamento existe
+    beq     $v0, $zero, info_ap_apt_is_empty    # se v0 == zero, vá para info_ap_apt_is_empty
+    # j       clear_current_shell_cmd             # jump para clear_current_shell_cmd para encerrar
 
+
+    # Pegando as informações de um apartamento específico e imprimindo no shell 
+    la      $t0, cmd_info_ap_message_ap
+    write_shell($t0)
+    la      $a0, 0($s2) #
+    write_shell($t0)
+    la      $v0, 1($s2)
+    write_shell($t0)
+
+    la      $t0, cmd_info_ap_message_moradores
+    write_shell($t0)
+    # Moradores {
+    la      $t0, 8($s2)     # primeiro morador (tem que ter pelo menos um morador no apartamento)
+    write_shell($t0)
     
+    # morador 2 (se existir)
+    la      $t0, 30($s2)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
 
-   
-# continuar aqui!!
+    # morador 3 (se existir)
+    la      $t0, 52($s2)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
 
+    # morador 4 (se existir)
+    la      $t0, 74($s2)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
+
+    # morador 5 (se existir)
+    la      $t0, 96($s2)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0) # }
+
+
+
+jump_to_auto:
+    lb		$t1, cmd_ad_auto_type_carro		# 
+    lb		$t2, 118($s2)		# 
+    beq		$t1, $t2, imprime_carro	# if $t1 == $t2 then goto imprime_carro
+    lb      $t1, cmd_ad_auto_type_moto
+    beq     $t1, $t2, imprime_moto
+    j       clear_current_shell_cmd
+
+imprime_carro:
+    la      $t0, cmd_info_ap_message_carro
+    write_shell($t0)
+    la      $t0, 119($s2)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 141($s2)
+    write_shell($t0)
+    j       clear_current_shell_cmd
+
+imprime_moto:
+    la      $t0, cmd_info_ap_message_moto
+    write_shell($t0)
+    la      $t0, 119($s2)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 141($s2)
+    write_shell($t0)
+    
+    lb      $t0, 156($s2)
+    bne     $t0, $zero, imprime_moto_2
+    j       clear_current_shell_cmd
+
+imprime_moto_2:
+    la      $t0, cmd_info_ap_message_moto
+    write_shell($t0)
+    la      $t0, 157($s2)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 179($s2)
+    write_shell($t0)
+    j       clear_current_shell_cmd
 
 info_ap_apt_is_empty:
     print_error(cmd_info_ap_apt_is_empty)
-    j           write_current_shell_cmd         # jump to write_current_shell_cmd #mudar para clear_current_shell
+    j       clear_current_shell_cmd         # jump to write_current_shell_cmd #mudar para clear_current_shell
 
 info_ap_error_format:
     print_error(cmd_info_ap_error_format)
-    j        write_current_shell_cmd         # jump to write_current_shell_cmd
+    j       clear_current_shell_cmd         # jump to write_current_shell_cmd
 
-    info_ap_error_format_2:
+info_ap_error_format_2:
     print_error(cmd_info_ap_error_format_2)
-    j       write_current_shell_cmd
+    j       clear_current_shell_cmd
 
 info_ap_error_invalid_floor:
     print_error(cmd_info_ap_error_invalid_floor)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to write_current_shell_cmd
 
 
+info_geral:
+    
+    la		$t0, cmd_info_geral_message_nao_vazios		# 
+    write_shell($t0)
+
+    # Allocate 32 of bytes in memory
+    addi	$a0, $0, 32		# 32 bytes to be allocated
+    addi	$v0, $0, 9		# system call #9 - allocate memory
+    syscall					# execute
+    addi	$s1, $v0, 0			# $s1 = $v0 + 0
+
+    # Calcula a quantidade de nós na ll
+    addi	$a0, $s2, 0			# $a0 = $s2 + 0
+    jal		calculate_links_on_ll				# jump to calculate_links_on_ll and save position to $ra
+    addi	$s3, $v0, 0			# $a0 = $v0 + 0
+
+    # Converte o inteiro em string
+    addi	$a0, $s3, 0			# $a0 = $s3 + 0
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0 
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_1		# 
+    write_shell($t0)
+
+    # Calcula as porcentagens
+    addi	$a0, $s3, 0			# $a0 = $s3 + 0
+    jal		calculate_info_geral_percentage				# jump to calculate_info_geral_percentage and save position to $ra
+
+    # Converte o inteiro em string
+    addi	$a0, $v0, 0			# $a0 = $v0 + 0
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0 
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_2		# 
+    write_shell($t0)
+    
+    la		$t0, cmd_info_geral_message_vazios		# 
+    write_shell($t0)
+
+    # Converte o inteiro em string
+    addi	$t0, $zero, 40			# $t0 = $zero + 40
+    sub		$a0, $t0, $s3		# $a0 = $t0 - $s3
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_1		# 
+    write_shell($t0)
+
+    addi	$a0, $v1, 0			# $a0 = $v1 + 0
+    addi	$a1, $s1, 0			# $a1 = $s1 + 0 
+    jal		int2str				# jump to int2str and save position to $ra
+    write_shell($s1)
+
+    la		$t0, cmd_info_geral_message_percentage_2		# 
+    write_shell($t0)
+    
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 help:
     la		$t0, std_help		# 
     write_shell($t0)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 exit:
     addi	$v0, $0, 10		# System call 10 - Exit
@@ -796,6 +1106,58 @@ search_if_apt_exists_false:
     addi	$v0, $zero, 0			# $v0 = $zero + 0
     jr		$ra					# jump to $ra
 
+search_morador_in_apt:
+    # $a0 => Endereço da String do nome do morador
+    # $a1 => Endereço do bloco apartamento
+    # $v0 => Endereço do morador OU $zero se não encontrou nenhum
+    addi	$t0, $a0, 0			# $t0 = $a0 + 0
+    addi	$t1, $a1, 8			# $t1 = $a1 + 8
+    lw		$t2, 4($a1)		# Lê a quantidade de moradores que há
+
+    # Armazena na stack o valor de $ra
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$ra, 0($sp)		# 
+
+search_morador_in_apt_loop:
+    # Verifica quando não há mais moradores para procurar
+    beq		$t2, $zero, search_morador_in_apt_finish_not_found	# if $t2 == $zero then goto search_morador_in_apt_finish_not_found
+
+    # Armazena $t0, $t1 e $t2 na pilha
+    addi	$sp, $sp, -12			# $sp = $sp + -12
+    sw		$t0, 0($sp)		# 
+    sw		$t1, 4($sp)		# 
+    sw		$t2, 8($sp)		# 
+
+    # Verifica o morador atual
+    addi	$a0, $t0, 0			# $a0 = $t0 + 0
+    addi	$a1, $t1, 0			# $a1 = $t1 + 0
+    jal		strcmp				# jump to strcmp and save position to $ra
+    # Pega $t0, $t1 e $t2 da pilha
+    lw		$t0, 0($sp)		# 
+    lw		$t1, 4($sp)		# 
+    lw		$t2, 8($sp)		# 
+    addi	$sp, $sp, 12			# $sp = $sp + 12
+    # Verifica o strcmp
+    beq		$v0, $zero, search_morador_in_apt_finish_found	# if $v0 == $zero then goto search_morador_in_apt_finish_found
+
+    # Se não encontrado
+    # Subtrai a quantidade de moradores
+    subi	$t2, $t2, 1			# $t2 = $t2 - 1
+    # Pula para o próximo morador
+    addi	$t1, $t1, 22			# $t1 = $t1 + 22
+
+    # E reinicia o loop
+    j		search_morador_in_apt_loop				# jump to search_morador_in_apt_loop
+
+search_morador_in_apt_finish_not_found:
+    addi	$t1, $zero, 0			# $t1 = $zero + 0
+search_morador_in_apt_finish_found:
+    # Pega o endereço armazenado na pilha e volta com o resultado
+    addi	$v0, $t1, 0			# $v0 = $t1 + 0
+    lw		$ra, 0($sp)		# 
+    addi	$sp, $sp, 4			# $sp = $sp + 4
+    jr		$ra					# jump to $ra    
+
 check_apt:
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
     addi	$t1, $a1, 0			# $t1 = $a1 + 0
@@ -838,6 +1200,36 @@ store_morador:
     jal		strcpy				# jump to strcpy and save position to $ra
     lw		$ra, 0($sp)		# 
     addi	$sp, $sp, 4			# $sp = $sp + 4
+    jr		$ra					# jump to $ra
+
+delete_morador:
+    # $a0 => Endereço do morador no bloco do apartamento
+    # $a1 => Endereço do último morador no apartamento
+
+    # Armazena $ra e $a1 na stack
+    addi	$sp, $sp, -8			# $sp = $sp + -8
+    sw		$a1, 0($sp)		# 
+    sw		$ra, 4($sp)		#
+
+    # Preenche o endereço do morador a ser deletado com \0
+    addi	$a0, $a0, 0			# $a0 = $a0 + 0
+    addi	$a1, $zero, 22			# $a1 = $zero + 22
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    # Obtém $a1 da Stack
+    lw		$a1, 0($sp)		# 
+
+    # Copia último morador e coloca-o na posição do morador excluído
+    jal		strcpy				# jump to strcpy and save position to $ra
+
+    # Preenche o endereço do morador movido com \0
+    addi	$a0, $a1, 0			# $a0 = $a1 + 0
+    addi	$a1, $zero, 22			# $a1 = $zero + 22
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    # Pega $ra e volta para o retorno
+    lw		$ra, 4($sp)		# 
+    addi	$sp, $sp, 8			# $sp = $sp + 8
     jr		$ra					# jump to $ra
 
 # Função que calcula o tamanho de uma String até um separador
@@ -939,3 +1331,102 @@ fill_with_null_byte_loop:
 
 fill_with_null_byte_finish:
     jr		$ra					# jump to $ra
+
+calculate_links_on_ll:
+    # $a0 => cabeça da lista ligada
+    # $v0 => quantidade de links
+    addi	$t0, $zero, 0			# $t0 = $zero + 0
+    addi	$t1, $a0, 0			# $t1 = $a0 + 0
+    
+    beq		$t1, $zero, calculate_links_on_ll_finish	# if $t1 == $zero then goto calculate_links_on_ll_finish
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    
+calculate_links_on_ll_loop:
+    lw		$t2, 196($t1)		#
+    beq		$t2, $zero, calculate_links_on_ll_finish	# if $t2 == $zero then goto calculate_links_on_ll_finish
+    addi	$t0, $t0, 1			# $t0 = $t0 + 1
+    jump_to_next_ll($t1)
+    j		calculate_links_on_ll_loop				# jump to calculate_links_on_ll_loop    
+    
+calculate_links_on_ll_finish:
+    addi	$v0, $t0, 0			# $v0 = $t0 + 0
+    jr		$ra					# jump to $ra
+
+calculate_info_geral_percentage:
+    # $a0 => quantidade de apartamentos ocupados
+    # $v0 => Porcentagem de ocupados
+    # $v1 => Porcentagem de vazios
+    addi	$t0, $zero, 40			# $t0 = $zero + 40
+    addi	$t1, $a0, 0			# $t1 = $a0 + 0
+    addi	$t2, $zero, 100			# $t4 = $zero + 100
+    mult	$t1, $t2			# $t1 * $t2 = Hi and Lo registers
+    mflo	$t1					# copy Lo to $t1
+
+    div		$t1, $t0			# $t1 / $t0
+    mflo	$t4					# $t2 = floor($t1 / $t0) 
+    mfhi	$t3					# $t3 = $t1 % $t0 
+
+    addi	$v0, $t4, 0			# $v0 = $t2 + 0
+    sub		$v1, $t2, $v0		# $v1 = $t2 - $v0
+
+    jr		$ra					# jump to $ra    
+
+# inputs : $a0 -> integer to convert
+#          $a1 -> address of string where converted number will be kept
+# outputs: none
+int2str:
+    addi $sp, $sp, -4         # to avoid headaches save $t- registers used in this procedure on stack
+    sw   $t0, ($sp)           # so the values don't change in the caller. We used only $t0 here, so save that.
+    bltz $a0, neg_num         # is num < 0 ?
+    j    next0                # else, goto 'next0'
+
+neg_num:                  # body of "if num < 0:"
+    li   $t0, '-'
+    sb   $t0, ($a1)           # *str = ASCII of '-' 
+    addi $a1, $a1, 1          # str++
+    li   $t0, -1
+    mul  $a0, $a0, $t0        # num *= -1
+
+next0:
+    li   $t0, -1
+    addi $sp, $sp, -4         # make space on stack
+    sw   $t0, ($sp)           # and save -1 (end of stack marker) on MIPS stack
+
+push_digits:
+    blez $a0, next1           # num < 0? If yes, end loop (goto 'next1')
+    li   $t0, 10              # else, body of while loop here
+    div  $a0, $t0             # do num / 10. LO = Quotient, HI = remainder
+    mfhi $t0                  # $t0 = num % 10
+    mflo $a0                  # num = num // 10  
+    addi $sp, $sp, -4         # make space on stack
+    sw   $t0, ($sp)           # store num % 10 calculated above on it
+    j    push_digits          # and loop
+
+next1:
+    lw   $t0, ($sp)           # $t0 = pop off "digit" from MIPS stack
+    addi $sp, $sp, 4          # and 'restore' stack
+
+    bltz $t0, neg_digit       # if digit <= 0, goto neg_digit (i.e, num = 0)
+    j    pop_digits           # else goto popping in a loop
+
+neg_digit:
+    li   $t0, '0'
+    sb   $t0, ($a1)           # *str = ASCII of '0'
+    addi $a1, $a1, 1          # str++
+    j    next2                # jump to next2
+
+pop_digits:
+    bltz $t0, next2           # if digit <= 0 goto next2 (end of loop)
+    addi $t0, $t0, '0'        # else, $t0 = ASCII of digit
+    sb   $t0, ($a1)           # *str = ASCII of digit
+    addi $a1, $a1, 1          # str++
+    lw   $t0, ($sp)           # digit = pop off from MIPS stack 
+    addi $sp, $sp, 4          # restore stack
+    j    pop_digits           # and loop
+
+next2:
+    sb  $zero, ($a1)          # *str = 0 (end of string marker)
+
+    lw   $t0, ($sp)           # restore $t0 value before function was called
+    addi $sp, $sp, 4          # restore stack
+    jr  $ra                   # jump to caller
