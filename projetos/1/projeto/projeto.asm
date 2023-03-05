@@ -47,8 +47,8 @@
     cmd_salvar_colunas: .asciiz "Apartamento, Morador 1, Morador 2, Morador 3, Morador 4, Morador 5, Veiculo Tipo 1, Modelo 1, Cor 1, Veiculo Tipo 2, Modelo 2, Cor 2"
     cmd_salvar_sucessfull_message: .asciiz "Dados salvos com sucesso."
     cmd_salvar_file: .asciiz "C:/Users/julya/OneDrive/Documentos/Arquitetura/projeto_teste.csv"
-    cmd_salvar_sep_col: .asciiz "," # separador de colunas do arquivo
-    cmd_salvar_endline_file: .asciiz "\n" # quebra de linha do arquivo
+    # cmd_salvar_sep_col: .asciiz "," # separador de colunas do arquivo
+    # cmd_salvar_endline_file: .asciiz "\n" # quebra de linha do arquivo
     .align 2 # dados do arquivo
     cmd_salvar_data: .space 200
 
@@ -193,6 +193,13 @@ write_current_shell_cmd:
 
     j		main				# jump to main
 
+clear_current_shell_cmd:
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    addi	$a1, $zero, 64			# $a1 = $zero + 64
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+
 # Função que adiciona morador ao condomínio
 ad_morador:
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -290,7 +297,7 @@ ad_morador_store_morador:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_into_existing_apt:
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
@@ -317,31 +324,31 @@ ad_morador_into_existing_apt:
     write_shell($t0) # Print of \n
     la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
     write_shell($t0) # Print Sucessfull message
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_1:
     print_error(cmd_ad_morador_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_format_2:
     print_error(cmd_ad_morador_error_format_2)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_floor:
     print_error(cmd_ad_morador_error_invalid_floor)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_apartment:
     print_error(cmd_ad_morador_error_invalid_apartament)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_invalid_name_size:
     print_error(cmd_ad_morador_error_invalid_name_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_morador_error_apt_is_full:
     print_error(cmd_ad_morador_error_apt_is_full)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que adiciona um automóvel a um apartamento
 ad_auto:
@@ -428,31 +435,31 @@ ad_auto:
     addi	$a1, $v0, 0			# $a1 = $v0 + 0
     jal		store_auto				# jump to store_auto and save position to $ra
 
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_format_1:
     print_error(cmd_ad_auto_error_format_1)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_auto_type:
     print_error(cmd_ad_auto_error_invalid_type_auto)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_invalid_modelo_size:
     print_error(cmd_ad_auto_error_invalid_modelo_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
     
 ad_auto_error_invalid_cor_size:
     print_error(cmd_ad_auto_error_invalid_cor_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_apt_not_found:
     print_error(cmd_ad_auto_error_apt_not_found)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 ad_auto_error_not_enough_size:
     print_error(cmd_ad_auto_error_not_enough_size)
-    j		write_current_shell_cmd				# jump to write_current_shell_cmd
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Remove um automóvel de um apartamento
 rm_auto:
@@ -533,24 +540,19 @@ limpar_ap:
     write_shell($t3)
     j		write_current_shell_cmd				# jump to write_current_shell_cmd
 
-#  OBS: O "SLAVAR" FUNCIONA 100% APENAS QUANDO ADICIONADO 1 LINHA INTEIRA DE MORADORES + VEÍCULOS
-#  QUANDO VAI LER O BLOCO DE "PRÓXIMO ENDEREÇO" SE DEPARA COM LIXO NO INÍCIO E DEPOIS LER O PRÓXIMO 
-#  APARTAMENTO COMO DEVE. PORÉM, QUANDO TERMINA DE LER NÃO CONSIGO SAIR DO LOOP, OU SEJA, PROBLEMAS...
 salvar:
-    # Alocação de memória
-    addi	$a0, $0, 600		# 200 bytes to be allocated
-    addi	$v0, $0, 9		# system call #9 - allocate memory
-    syscall					# execute
-    addi	$s4, $v0, 0			# $t0 = $v0 + 0
+    addi	$a0, $0, 1000		# 1000 bytes para serem alocados
+    addi	$v0, $0, 9		# comando sycall 9 para alocar memória
+    syscall					# execução do syscall
+    addi	$s4, $v0, 0			# $s4 = $v0 + 0, salvando o resultado da alocação em $s4
 
-    # Abre o arquivo
-	li $v0, 13
-	la $a0, cmd_salvar_file
-	la $a1, 1
-	syscall
-	addi $s3, $v0, 0
+	li $v0, 13 # comando sycall 13 para abrir um arquivo
+	la $a0, cmd_salvar_file # carregando o endereço do caminhos do arquivo em $a0
+	la $a1, 1 # seta permisão de escrita no arquivo em $a1
+	syscall # execução do syscall
+	addi $s3, $v0, 0 # $s3 = $v0 + 0, salvando o resultado da abertura em $s4
 
-	la $a3, cmd_salvar_colunas
+	la $a3, cmd_salvar_colunas # carrega o endereço das colunas que existirão no arquivo em $a3
 	la $t0, ($s2) # carrega o endereço da linked list
 	la $t1, ($a3) # carrega o endereço da string que contém as colunas do arquivo
     la $t2, ($s4) # carrega o endereço da alocação de memória na heap
@@ -558,26 +560,31 @@ salvar:
 	li $t4, 0 # flag indicando se o nome do morador já foi lido
     li $t5, 0 # flag para finalizar a leitura
 
+# Função que realiza a leitura da string referente às colunas do arquivo
 loop_over_string_columns:
-    # leitura da string referente às colunas
-	lb $t6, 0($t1)
-	beq $t6, $zero, write_newline
-	sb $t6, ($t2)
-	addi $t1, $t1, 1
-	addi $t2, $t2, 1
+	lb $t6, 0($t1) # carrega byte a byte da string em $t6
+	beq $t6, $zero, write_newline # se $t6 == 0 então vai para 'write_newline', ou seja, as colunas já foram lidas
+	sb $t6, ($t2) # armazena byte a byte da string em $t2 (heap)
+	addi $t1, $t1, 1 # avança um caractere da string
+	addi $t2, $t2, 1 # avança uma coluna na heap
 	
-	j loop_over_string_columns
+	j loop_over_string_columns # realiza o jump para 'loop_over_string_columns'
 
+# Função que verifica as flags para designas as próximas funções
 while_loop:
-    beq $t3, $zero, read_morador_apt
-    beq $t4, $zero, read_morador_name
-    # bne $t3, $zero, read_morador_auto_type
-    beq $t9, $zero, read_morador_auto_type
-    beq $t5, $zero, write_newline
+    beq $t3, $zero, read_morador_apt # se $t3 == 0, então vai para 'read_morador_apt'
+    beq $t4, $zero, read_morador_name # se $t4 == 0, então vai para 'read_morador_name'
+    beq $t9, $zero, read_morador_auto_type # se $t9 == 0, então vai para 'read_morador_auto_type'
+    beq $t5, $zero, write_newline # se $t5 == 0, então vai para 'write_newline'
 
-    j write_file
+    j write_file # realiza o jump para 'write_file', pois todos os dados já foram lidos
 
+# Função que vai ler e salvar na heap os números do andar e do apartamento do(a) morador(a)
 read_morador_apt:
+    # la $t0, ($s2)
+    # essa linha subtrai pq em 'write_mewline' há um incremente do endereço para não sobrescrever o '\n'
+    subi $t0, $t0, 1 # está dando problema na segunda volta para poder ler o 2º endereço
+    la $s6, ($t0)
     lb $t3, 0($t0) # carregamento do número do andar em $t3
     sb $t3, ($t2) # armazena $t3 em $t2 (heap)
     addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
@@ -585,40 +592,47 @@ read_morador_apt:
     lb $t3, 1($t0) # carrega o número do apartamento em $t3
     sb $t3, ($t2) # armazena $t3 em $t2 (heap)
     addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
-
-    addi $t7, $t7, 44 # carrega o valor do caractere ','
-    sb $t7, ($t2) # armazena a ',' em $t2 (heap)
+    # $t7 => $t6
+    addi $t6, $t6, 44 # carrega o valor do caractere ','
+    sb $t6, ($t2) # armazena a ',' em $t2 (heap)
 	addi $t2, $t2, 1 # avança uma coluna na heap
-	sll $t7, $0, 4 # seta $t7 para 0
+	sll $t6, $0, 4 # seta $t6 para 0
 
-    li $t3, 1 # altera a bandeira $t3 para 1, pois o núemro do apartamento já foi lido
-    la $t0, ($s2)
-    j while_loop
+    li $t3, 1 # altera a bandeira $t3 para 1, pois o número do apartamento já foi lido
+    # la $t0, ($s2) # recarrega o endereço da linked list $s2 em $t0
+    j while_loop # realiza o jump para 'while_loop'
 
+# Função que vai ler e salvar na heap o nome do(a) morador(a)
 read_morador_name:
     sll $t3, $0, 4 # seta $t3 para 0
-    lb $t3, 8($t0) # carrega byte por byte do nome do(a) morador(a) a partir do offset 8, onde o nome começa
+
+    # para funcionar o offset em $t0 deve ser 0
+    lb $t3, 8($t0) # carrega byte por byte do nome do(a) morador(a) a partir do offset 8, no qual o nome começa
     beq $t3, $zero, name_read # se $t3 == 0 então vai para 'name_read', ou seja, o nome do(a) morador(a) já foi lido
 
-    sll $t7, $0, 4
+    sll $t7, $0, 4 # seta $t7 para 0
     sb $t3, ($t2) # armazena $t3 em $t2 (heap)
-    addi $t2, $t2, 1 # avança uma coluna em $t2
+    addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
     addi $t0, $t0, 1 # avança uma posição da linked list em $t0
    
-    j read_morador_name
+    j read_morador_name # realiza o jump para 'read_morador_name'
 
 name_read: # $t7 => $t6 e $t9 => $t7
     beq $t7, 1, loop_over_linked_list
+    li $t3, 1
+    # beq $t7, 1, while_loop
 
-    sll $t6, $0, 4 # limpa $t6 para 0
+    sll $t6, $0, 4 # limpa $t6 para 0 - Será que precisa dessa linha?
     addi $t6, $t6, 44 # carrega o valor do caractere ','
     sb $t6, ($t2) # armazena a ',' em $t2 (heap)
-	sll $t6, $0, 4 # limpa $t6 para 0
-	addi $t2, $t2, 1 # avança uma coluna
+	sll $t6, $0, 4 # seta $t6 para 0
+	addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
     addi $t0, $t0, 1 # avança uma posição da linked list em $t0
-    
-    li $t7, 1
-    j read_morador_name
+
+    li $t4, 1
+    addi $t7, $0, 1 # adiciona 1 à $t7 para indicar que uma vírgula já foi adicionado, logo é preciso iterear a lista 
+    sll $s7, $0, 4
+    j read_morador_name # realiza o jump para 'read_morador_name'
 
 read_morador_auto_type:
     beq $t6, 1, read_morador_auto_detail
@@ -644,6 +658,7 @@ read_morador_auto_detail:
     lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
     beq $t3, $zero, auto_name_read
 
+    # Na linha abaixo, após a leitura do 3º morador, está armazenando uma ','. Não faço ideia de onde ela surgiu...
     sb $t3, ($t2) # armazena $t3 em $t2 (heap)
     addi $t2, $t2, 1 # avança uma coluna na heap
     addi $t0, $t0, 1 # avança uma posição da linked list em $t0
@@ -665,8 +680,8 @@ auto_name_read:
 
 loop_over_list:
     bne $t3, $zero, set_flag
-
-    # final da linked list
+    # Talvez seja possível setar o $s7 para 0 aqui nessa label...
+    # final da linked list (acho que essa parte, até a linha 690 [com exceção da 689], não é mais necessária...)
     la $t9, ($s2)
     addi $t9, $t9, 200
     li $t3, 1
@@ -676,6 +691,7 @@ loop_over_list:
     la $t4, ($s2)
     addi $t4, $t4, 186
     sll $t3, $0, 4
+    sll $s7, $0, 4
     beq $t0, $t4, write_new_line
 
     sll $t9, $0, 4
@@ -693,26 +709,33 @@ set_flag:
     # li $t3, 1
     j read_morador_auto_detail
 
+# Função que realiza o loop na linked list até completar o tamanho do bloco dos 5 possíveis moradores ou encontrar um novo caractere em $t3
 loop_over_linked_list:
-    bne $t3, $zero, count_morador
+    bne $t3, $zero, count_morador # se $t3 != 0, então existe um caractere para ser lido, logo vai para 'count_morador'
+    
+    addi $a0, $s6, 0
+    jal check_linked_list_last_position
 
-    la $t9, ($s2)
-    addi $t9, $t9, 110
-    li $t3, 1
-    beq $t0, $t9, while_loop
-    sll $t9, $0, 4
-    sll $t3, $0, 4
+    continue_looping:
+    addi $s7, $0, 1 # seta $s7 para 1
+    li $t3, 1 # seta $t3 para 1
+    li $t9, 1 # seta $t9 para 1
+    sll $t5, $0, 0 # seta $t5 para 0
+    beq $t0, $v0, while_loop # se $t0 == $t6, então vai para 'while_loop', pois todos os moradores do apartamento foram lidos
+
+    # sll $t6, $0, 4 # seta $t6 para 0
+    sll $t3, $0, 4 # seta $t3 para 0
+    sll $t9, $0, 4 # seta $t9 para 0
 
     addi $t0, $t0, 1 # avança uma posição da linked list em $t0
     lb $t3, 8($t0) # carrega o byte do endereço atual em $t3
     sll $t7, $0, 4 # seta $t7 para 0
-    j loop_over_linked_list
+    j loop_over_linked_list # realiza o jump para 'loop_over_linked_list'
 
 count_morador:
     lw $t8, 4($s2)
     addi $s5, $s5, 1
     li $t4, 1
-    # li $t3, 1
     beq $t8, $s5, while_loop
     j read_morador_name
 
@@ -720,39 +743,66 @@ write_newline:
 	addi $t6, $t6, 10 # carrega o '\n' em $t6
 	sb $t6, ($t2) # armazena o '\n' na heap
 	addi $t2, $t2, 1 # avança uma coluna na heap
-    addi $t0, $t0, 1 # avança uma posição na linked list
+
     sll $t6, $0, 4 # seta $t6 para 0
     sll $t4, $0, 4 # seta $t4 para 0
-    li $t5, 1 # altera a bandeira $t5 para 1
-    li $t9, 1
 
-    j while_loop
+    addi $s6, $s6, 186
+    beq $t0, $s6, load_next_block_address
+    sll $t6, $0, 4 # seta $t6 para 0
+    addi $t0, $t0, 1 # avança uma posição na linked list
+
+    li $t5, 1 # altera a bandeira $t5 para 1
+    li $t9, 1 # altera a bandeira $t9 para 1
+
+    j while_loop # realiza o jump para 'while_loop'
 
 write_new_line:
+    sll $t4, $0, 4 # seta $t4 para 0
 	addi $t6, $t6, 10 # carrega o '\n' em $t6
 	sb $t6, ($t2) # armazena o '\n' na heap
 	addi $t2, $t2, 1 # avança uma coluna na heap
+    sll $t6, $0, 4 # seta $t6 para 0
+
+    # la $t6, ($s2)
+    # addi $t6, $t6, 186
+    addi $s6, $s6, 186
+    beq $t0, $s6, load_next_block_address
     addi $t0, $t0, 1 # avança uma posição na linked list
     sll $t6, $0, 4 # seta $t6 para 0
-    # sll $t4, $0, 4 # seta $t4 para 0
-    # li $t5, 1 # altera a bandeira $t5 para 1
-    # li $t9, 1
 
-    j read_morador_name
+    j read_morador_name # realiza o jump para 'read_morador_name'
+
+load_next_block_address:
+    sll $t6, $0, 4 # seta $t6 para 0
+    # la $t0, ($s2) # recarrega $t0 com o endereço da linked list em $s2
+    subi $s6, $s6, 186
+    lw $t7, 196($s6) # carrega o endereço do próximo bloco do novo apartamento em $t7
+    addi $t0, $t7, 0 # adiciona $t7 à $t0 para continuar a leitura a partir desse novo endereço
+    beq $t0, $zero, write_file # se $t0 == 0 significa que não há um novo endereço para ser lido, então vai para 'write_file'
+    lb $t3, 0($t0) # carrega o próximo byte da linked list
+    addi $t0, $t0, 1
+    # bne $t3, $zero, read_morador_apt # se $t3 != zero, então vai para 'read_morador_apt', pois há um novo apartamento para ser lido
+    j read_morador_apt # realiza o jump para 'read_morador_apt'
 
 write_file:
-    addi $a0, $s3, 0
+    addi $a0, $s3, 0 # recupera o valor da abertura do arquivo em $s3 e coloca em $a0
     
-    la $a1, ($s4)
-    li $a2, 600
-    li $v0, 15
-    syscall 
+    la $a1, ($s4) # carrega o endereço da alocação de memória em $a1
+    li $a2, 1000 # especifica o valor máximo disponível para o length do arquivo em $a2
+    li $v0, 15 # chamada do syscall para escrita no arquivo com código 15
+    syscall  # execução do syscall
 
-    addi $a0, $s3, 0
-    li $v0, 16
-    syscall
+    addi $a0, $s3, 0 # recupera o valor da abertura do arquivo em $s3 e coloca em $a0
+    li $v0, 16 # chamada do syscall para fechamento no arquivo com código 16
+    syscall  # execução do syscall
 
-    j write_current_shell_cmd
+    # Dados salvos com sucesso no arquivo
+    la		$t0, nl		# 
+    write_shell($t0) # imprime o '\n'
+    la		$t0, cmd_salvar_sucessfull_message		# carrega o endereço da mensagem de sucesso
+    write_shell($t0) # imprime a mensagem de sucesso
+    j		clear_current_shell_cmd				# realiza o jump para 'clear_current_shell_cmd'
 
 help:
     la		$t0, std_help		# 
@@ -762,6 +812,14 @@ help:
 exit:
     addi	$v0, $0, 10		# System call 10 - Exit
     syscall					# execute
+
+check_linked_list_last_position:
+    bne $s7, $zero, continue_looping
+    add $t1, $a0, $0
+    addi $t1, $t1, 186 # $t6 = $t6 + 186, ou seja, o endereço de $s2 somado à 186 nos dá um endereço de parada, pois esse representa o tamanho de até 5 moradores
+    addi $v0, $t1, 0
+    sll $t1, $0, 4
+    jr $ra
 
 strcmp:
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
