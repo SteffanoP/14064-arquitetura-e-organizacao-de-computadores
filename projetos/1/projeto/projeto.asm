@@ -57,6 +57,9 @@
     cmd_help: .asciiz "help"
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
 
+    # formatar data
+    cmd_formatar: .asciiz "formatar"
+
     cmd_exit: .asciiz "exit"
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
 .text
@@ -177,6 +180,12 @@ process_command:
     la		$a1, cmd_info_geral		# 
     jal		strcmp				# jump to strcmp and save position to $ra
     beq		$v0, $zero, info_geral	# if $v0 == $zero then goto info_geral
+
+    # Comando formatar
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_formatar		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, formatar	# if $v0 == $zero then goto info_geral
 
     # Command help
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -746,6 +755,9 @@ info_geral:
     
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
+formatar:
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    
 help:
     la		$t0, std_help		# 
     write_shell($t0)
