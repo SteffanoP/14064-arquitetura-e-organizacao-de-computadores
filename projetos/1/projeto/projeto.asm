@@ -54,10 +54,11 @@
     cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
     cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>"
     cmd_info_ap_message_ap: .asciiz "\nAP: "
-    cmd_info_ap_message_moradores: .asciiz "\nMoradores: "
-    cmd_info_ap_message_carro: .asciiz "\nCarro: \nModelo: "
-    cmd_info_ap_message_moto: .asciiz "\nMoto: \nModelo: "
-    cmd_info_ap_message_cor: .asciiz "\nCor: "
+    cmd_info_ap_message_moradores: .asciiz "\nMoradores: \n"
+    cmd_info_ap_message_moradores_linha: .asciiz "\n"
+    cmd_info_ap_message_carro: .asciiz "\nCarro \nModelo: \n"
+    cmd_info_ap_message_moto: .asciiz "\nMoto \nModelo: \n"
+    cmd_info_ap_message_cor: .asciiz "\nCor: \n"
 
     # info_geral data
     cmd_info_geral: .asciiz "info_geral"
@@ -710,6 +711,7 @@ info_ap:
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		jump_prefix				# jump to jump_prefix and save position to $ra
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
+    addi	$s7, $s2, 0			# $t0 = $v0 + 0
 
     # Verifica o formato X0Z do número do apartamento
     lb		$t0, 1($v0)		# Carrega um char na posição onde deveria estar o separador de X e Z
@@ -730,50 +732,59 @@ info_ap:
     # Verifica se o apartamento está cadastrado no condomínio
     addi    $a0, $v0, 0                         # a0 = v0 + 0
     addi    $a1, $s2, 0                         # a1 = s2 + 0
-    jal     search_if_apt_exists                # faz um jal para verificar se o apartamento existe
+    jal     search_if_apt_exists                # faz um jal para verificar se o apartamento existe e retorna endereço do bloco do ap em $v0
     beq     $v0, $zero, info_ap_apt_is_empty    # se v0 == zero, vá para info_ap_apt_is_empty
-    # j       clear_current_shell_cmd             # jump para clear_current_shell_cmd para encerrar
 
-
-    # Pegando as informações de um apartamento específico e imprimindo no shell 
+escrever_moradores:
+     # Pegando as informações de um apartamento específico e imprimindo no shell 
     la      $t0, cmd_info_ap_message_ap
     write_shell($t0)
-    la      $a0, 0($s2) #
+    la      $a0, 0($v0) #
     write_shell($t0)
-    la      $v0, 1($s2)
+    la      $v0, 1($v0)
     write_shell($t0)
 
     la      $t0, cmd_info_ap_message_moradores
     write_shell($t0)
     # Moradores {
-    la      $t0, 8($s2)     # primeiro morador (tem que ter pelo menos um morador no apartamento)
+    la      $t0, 7($v0)     # primeiro morador (tem que ter pelo menos um morador no apartamento)
     write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+
     
     # morador 2 (se existir)
-    la      $t0, 30($s2)    # verifica se existe um segundo morador
+    la      $t0, 29($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
     write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
 
     # morador 3 (se existir)
-    la      $t0, 52($s2)    # verifica se existe um segundo morador
+    la      $t0, 51($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
     write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
 
     # morador 4 (se existir)
-    la      $t0, 74($s2)    # verifica se existe um segundo morador
+    la      $t0, 73($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
     write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
 
     # morador 5 (se existir)
-    la      $t0, 96($s2)    # verifica se existe um segundo morador
+    la      $t0, 95($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
-    write_shell($t0) # }
-
+    write_shell($t0)
+    j       jump_to_auto
+     # }
 
 
 jump_to_auto:
     lb		$t1, cmd_ad_auto_type_carro		# 
-    lb		$t2, 118($s2)		# 
+    lb		$t2, 117($v0)		# 
     beq		$t1, $t2, imprime_carro	# if $t1 == $t2 then goto imprime_carro
     lb      $t1, cmd_ad_auto_type_moto
     beq     $t1, $t2, imprime_moto
@@ -782,36 +793,36 @@ jump_to_auto:
 imprime_carro:
     la      $t0, cmd_info_ap_message_carro
     write_shell($t0)
-    la      $t0, 119($s2)
+    la      $t0, 118($v0)
     write_shell($t0)
     la      $t0, cmd_info_ap_message_cor
     write_shell($t0)
-    la      $t0, 141($s2)
+    la      $t0, 139($v0)
     write_shell($t0)
     j       clear_current_shell_cmd
 
 imprime_moto:
     la      $t0, cmd_info_ap_message_moto
     write_shell($t0)
-    la      $t0, 119($s2)
+    la      $t0, 118($v0)
     write_shell($t0)
     la      $t0, cmd_info_ap_message_cor
     write_shell($t0)
-    la      $t0, 141($s2)
+    la      $t0, 139($v0)
     write_shell($t0)
     
-    lb      $t0, 156($s2)
+    lb      $t0, 155($v0)
     bne     $t0, $zero, imprime_moto_2
     j       clear_current_shell_cmd
 
 imprime_moto_2:
     la      $t0, cmd_info_ap_message_moto
     write_shell($t0)
-    la      $t0, 157($s2)
+    la      $t0, 156($v0)
     write_shell($t0)
     la      $t0, cmd_info_ap_message_cor
     write_shell($t0)
-    la      $t0, 179($s2)
+    la      $t0, 177($v0)
     write_shell($t0)
     j       clear_current_shell_cmd
 
@@ -918,7 +929,7 @@ loop_over_strings:
     j		loop_over_strings	# jump to loop_over_strings
     
 compare_greater:
-    addi $v0, $v0, 1
+    addi    $v0, $v0, 1
     slt		$t3, $t3, $t4		# $t3 = ($t3 < $t4) ? 1 : 0
     beq		$t3, $zero, finish_strcmp	# if $t3 == $zero then goto finish_strcmp
     subi	$v0, $v0, 2			# $v0 = $v0 - 2
