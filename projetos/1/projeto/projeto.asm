@@ -756,6 +756,26 @@ info_geral:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 formatar:
+    beq		$s2, $zero, formatar_finish	# if $s2 == $zero then goto formatar_finish
+
+    # Salva o endereço na Stack para usar na criação de um novo apartamento
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$s2, 0($sp)		# 
+
+    # Copia o valor de $s2 para $s3
+    addi	$s3, $s2, 0			# $s3 = $s2 + 0
+
+    # Carrega o endereço do próximo apartamento em $s2
+    lw		$s2, 196($s2)		# 
+
+    # Limpa todo o bloco com null bytes
+    addi	$a0, $s3, 0			# $a0 = $s3 + 0
+    addi	$a1, $zero, 200			# $a1 = $zero + 200
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    j		formatar				# jump to formatar
+    
+formatar_finish:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
     
 help:
