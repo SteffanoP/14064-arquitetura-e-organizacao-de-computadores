@@ -51,9 +51,7 @@
     cmd_salvar: .asciiz "salvar"
     cmd_salvar_colunas: .asciiz "Apartamento, Morador 1, Morador 2, Morador 3, Morador 4, Morador 5, Veiculo Tipo 1, Modelo 1, Cor 1, Veiculo Tipo 2, Modelo 2, Cor 2"
     cmd_salvar_sucessfull_message: .asciiz "Dados salvos com sucesso."
-    cmd_salvar_file: .asciiz "C:/Users/julya/OneDrive/Documentos/Arquitetura/projeto_teste.csv"
-    # cmd_salvar_sep_col: .asciiz "," # separador de colunas do arquivo
-    # cmd_salvar_endline_file: .asciiz "\n" # quebra de linha do arquivo
+    cmd_salvar_file: .asciiz "projeto_teste.csv" # coloque aqui o diretório do arquivo
     .align 2 # dados do arquivo
     cmd_salvar_data: .space 200
 
