@@ -20,7 +20,7 @@
     cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n"
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
-
+    
     # rm_morador data
     cmd_rm_morador: .asciiz "rm_morador"
     cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n"
@@ -1091,6 +1091,7 @@ finish_strcpy:
 # Verifica se o apartamento já está cadastrado no sistema
 search_if_apt_exists:
     addi	$t0, $a1, 0			# $t0 = $a1 + 0
+    addi	$v1, $zero, 0			# $v1 = $zero + 0
 
 search_if_apt_exists_loop_over_ll:
     beq		$t0, $zero, search_if_apt_exists_false	# if $t0 == $zero then goto search_if_apt_exists_false
