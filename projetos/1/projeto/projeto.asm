@@ -587,7 +587,7 @@ while_loop:
 read_morador_apt:
     # essa linha subtrai pq em 'write_mewline' há um incremente do endereço para não sobrescrever o '\n'
     subi $t0, $t0, 1 # está dando problema na segunda volta para poder ler o 2º endereço
-    la $s6, ($t0)
+    la $s6, ($t0) # carrega o endereço do atual bloco da linked list em $s6
     lb $t3, 0($t0) # carregamento do número do andar em $t3
     sb $t3, ($t2) # armazena $t3 em $t2 (heap)
     addi $t2, $t2, 1 # avança uma coluna em $t2 (heap)
@@ -618,6 +618,7 @@ read_morador_name:
    
     j read_morador_name # realiza o jump para 'read_morador_name'
 
+# Função que adiciona uma vírgula após a leitura do nome de um morador
 name_read:
     beq $t7, 1, loop_over_linked_list # se $t7 == 1 então vai para 'loop_over_linked_list'
     li $t3, 1 # seta $t3 para 1
@@ -668,7 +669,7 @@ read_morador_auto_detail:
 
 # Função que adiciona uma vírgula após a leitura dos detalhes do veículo serem lidos (nome e cor)
 auto_name_read:
-    beq $t7, 1, loop_over_list
+    beq $t7, 1, loop_over_list # se $t7 == 1 então vai para 'loop_over_list'
     sll $t6, $0, 4 # limpa $t6 para 0
     addi $t6, $t6, 44 # carrega o valor do caractere ','
     sb $t6, ($t2) # armazena a ',' em $t2 (heap)
@@ -709,8 +710,8 @@ set_flag:
 loop_over_linked_list:
     bne $t3, $zero, count_morador # se $t3 != 0, então existe um caractere para ser lido, logo vai para 'count_morador'
 
-    addi $a0, $s6, 0
-    jal check_linked_list_last_position
+    addi $a0, $s6, 0 # adiciona o endereço presente em $s6 no registrador $a0 para a função abaixo
+    jal check_linked_list_last_position  # realiza o jal para 'check_linked_list_last_position'
 
     continue_looping:
     addi $s7, $0, 1 # seta $s7 para 1
@@ -728,14 +729,14 @@ loop_over_linked_list:
     j loop_over_linked_list # realiza o jump para 'loop_over_linked_list'
 
 count_morador:
-    lw $t8, 4($s6)
-    addi $s5, $s5, 1
-    sll $t4, $0, 4
-    beq $t8, $s5, while_loop
-    j read_morador_name
+    lw $t8, 4($s6) # carrega a quantidade de moradores do atual apartamento
+    addi $s5, $s5, 1 # incrementa $s5 cada vez que passa pela label (é um contador)
+    sll $t4, $0, 4 # seta $t4 para 0
+    beq $t8, $s5, while_loop # se $t8 == $s5 então vai para 'while_loop'
+    j read_morador_name # realiza o jump para 'read_morador_name'
 
 write_newline:
-    sll $t6, $0, 4
+    sll $t6, $0, 4 # seta $t6 para 0
 	addi $t6, $t6, 10 # carrega o '\n' em $t6
 	sb $t6, ($t2) # armazena o '\n' na heap
 	addi $t2, $t2, 1 # avança uma coluna na heap
@@ -744,7 +745,7 @@ write_newline:
     sll $t4, $0, 4 # seta $t4 para 0
 
     addi $s6, $s6, 186
-    beq $t0, $s6, load_next_block_address
+    beq $t0, $s6, load_next_block_address # se $t0 == $s6 então vai para 'load_next_block_address'
     sll $t6, $0, 4 # seta $t6 para 0
     addi $t0, $t0, 1 # avança uma posição na linked list
 
