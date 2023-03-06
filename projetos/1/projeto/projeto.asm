@@ -933,6 +933,7 @@ finish_strcpy:
 # Verifica se o apartamento já está cadastrado no sistema
 search_if_apt_exists:
     addi	$t0, $a1, 0			# $t0 = $a1 + 0
+    addi	$v1, $zero, 0			# $v1 = $zero + 0
 
 search_if_apt_exists_loop_over_ll:
     beq		$t0, $zero, search_if_apt_exists_false	# if $t0 == $zero then goto search_if_apt_exists_false
