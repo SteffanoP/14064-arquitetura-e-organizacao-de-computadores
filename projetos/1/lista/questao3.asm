@@ -39,7 +39,7 @@ fib_recursive:                          # função que calcula o fibonacci
     sw		$v0, 0($sp)		            # armazena parâmetros na pilha
 
     lw		$a0, 8($sp)		            # carrega o conteúdo da pilha em $a0
-    subi	$a0, $a0, 2			        # $a0 = $a0 - 2, subtrai 2 do atual númeto em $a0 e atualiza
+    subi	$a0, $a0, 2			        # $a0 = $a0 - 2, subtrai 2 do atual número em $a0 e atualiza
     jal		fib				            # realiza o jump para 'fib' e salva o endereço da posição em $ra
 
     lw		$t0, 0($sp)		            # carrega o conteúdo da pilha em $t0
