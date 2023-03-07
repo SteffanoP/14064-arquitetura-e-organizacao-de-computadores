@@ -1527,32 +1527,48 @@ finish_strcpy:
 
 # Verifica se o apartamento já está cadastrado no sistema
 # Args:
-#   $a0 => 
+#   $a0 => Endereço de uma string no formato (A0C) onde:
+#       A = O número do andar
+#       C = O número do apartamento
+#   $a1 => Endereço da cabeça da lista ligada
+# Return:
+#   $v0 => Endereço encontrado ou /0 se não encontrado
+#   $v1 => Endereço do link anterior ao encontrado ou /0 se não houver/encontrado
 search_if_apt_exists:
+    # Carrega os registradores inicialmente
     addi	$t0, $a1, 0			# $t0 = $a1 + 0
     addi	$v1, $zero, 0			# $v1 = $zero + 0
 
 search_if_apt_exists_loop_over_ll:
+    # Verifica se o endereço passado é 0, logo não existe
     beq		$t0, $zero, search_if_apt_exists_false	# se $t0 == $zero então vá para search_if_apt_exists_false
     
-    addi	$sp, $sp, -8			# $sp = $sp + -8
-    sw		$ra, 0($sp)		# salva palavra de $ra na posição 0 de $sp
-    sw		$t0, 4($sp)		# salva palavra de $t0 na posição 4 de $sp
+    # Armazena $t0 e $ra na Stack
+    addi	$sp, $sp, -8		# $sp = $sp + -8
+    sw		$ra, 0($sp)		    # salva palavra de $ra na posição 0 de $sp
+    sw		$t0, 4($sp)		    # salva palavra de $t0 na posição 4 de $sp
+
+    # Chama a função check_apt
     addi	$a0, $a0, 0			# $a0 = $a0 + 0
     addi	$a1, $t0, 0			# $a1 = $t0 + 0
-    jal		check_apt				# pular para check_apt e salvar posição em $ra
-    lw		$ra, 0($sp)		# carrega palavra da posição 0 de $sp em $ra
-    lw		$t0, 4($sp)		# carrega palavra da posição 4 de $sp em $t0
+    jal		check_apt			# pular para check_apt e salvar posição em $ra
+    # Pega o conteúdo da stack
+    lw		$ra, 0($sp)		    # carrega palavra da posição 0 de $sp em $ra
+    lw		$t0, 4($sp)		    # carrega palavra da posição 4 de $sp em $t0
     addi	$sp, $sp, 8			# $sp = $sp + 8
+    # Verifica se o apartamento foi encontrado ou não
     bne		$v0, $zero, search_if_apt_exists_true	# se $v0 != $zero então vá para write_current_shell_cmd
+    # Caso não encontrado, armazena o atual em $v1 e pula $t0 para o próximo endereço
     addi	$v1, $t0, 0			# $v1 = $t0 + 0 | Mantém em $v1 o último apartamento antes do que se procura
-    jump_to_next_ll($t0)        # macro jump_to_next_ll
+    jump_to_next_ll($t0)        # macro jump_to_next_llW
     j		search_if_apt_exists_loop_over_ll				# pular para search_if_apt_exists_loop_over_ll
 
+# Caso a busca seja verdadeira, armazena o endereço encontrado em $v0
 search_if_apt_exists_true:
     addi	$v0, $t0, 0			# $v0 = $t0 + 0
     jr		$ra					# pular para $ra
 
+# Caso a busca seja falsa, armazena $zero em $v0
 search_if_apt_exists_false:
     addi	$v0, $zero, 0			# $v0 = $zero + 0
     jr		$ra					# pular para $ra
@@ -1732,10 +1748,12 @@ store_auto_slot_1:
     lw		$t1, 4($sp)		# carrega palavra da posição 4 de $sp em $t1
     lw		$t2, 8($sp)		# carrega palavra da posição 8 de $sp em $t2
 
+    # Armazena o nome do modelo com memcpy
     addi	$a0, $t2, 1			# $a0 = $t2 + 1
     addi	$a1, $t1, 6			# $a1 = $t1 + 6
     addi	$a2, $v0, 0			# $a2 = $v0 + 0
     jal		memcpy				# pular para strcpy e salvar posição em $ra
+    # Carrega o que foi armazenado na stack
     lw		$t1, 4($sp)		# carrega palavra da posição 4 de $sp em $t1
     lw		$t2, 8($sp)		# carrega palavra da posição 8 de $sp em $t2
 
@@ -1796,40 +1814,58 @@ fill_with_null_byte_loop:
 fill_with_null_byte_finish:
     jr		$ra					# pular para $ra
 
+# Calcula a quantidade de links/blocos na lista ligada
+# Args:
+#   $a0 => Cabeça da lista ligada
+# Return:
+#   $v0 => Retorna o valor da quantidade de links
 calculate_links_on_ll:
     # $a0 => cabeça da lista ligada
     # $v0 => quantidade de links
+    # Carrega uma cópia em temporários
     addi	$t0, $zero, 0			# $t0 = $zero + 0
     addi	$t1, $a0, 0			# $t1 = $a0 + 0
     
+    # Caso o link seja vazio, nem calcula e só finaliza
     beq		$t1, $zero, calculate_links_on_ll_finish	# se $t1 == $zero então vá para calculate_links_on_ll_finish
     addi	$t0, $t0, 1			# $t0 = $t0 + 1
     
 calculate_links_on_ll_loop:
+    # Carrega o próximo endereço e verifica se é o último
     lw		$t2, 196($t1)		#
     beq		$t2, $zero, calculate_links_on_ll_finish	# se $t2 == $zero então vá para calculate_links_on_ll_finish
+    # Caso negativo adiciona em $t0 e pula para a próxima bloco da lista ligada
     addi	$t0, $t0, 1			# $t0 = $t0 + 1
     jump_to_next_ll($t1)
     j		calculate_links_on_ll_loop				# pular para calculate_links_on_ll_loop    
     
 calculate_links_on_ll_finish:
+    # Finaliza carregando o valor acumulado em $t0 e coloca-o em $v0
     addi	$v0, $t0, 0			# $v0 = $t0 + 0
     jr		$ra					# pular para $ra
 
+# Função que calcula a porcentagem do comando info_geral
+# Args:
+#   $a0 => quantidade de apartamentos ocupados
+# Returns:
+#   $v0 => Porcentagem de ocupados
+#   $v1 => Porcentagem de vazios
 calculate_info_geral_percentage:
-    # $a0 => quantidade de apartamentos ocupados
-    # $v0 => Porcentagem de ocupados
-    # $v1 => Porcentagem de vazios
+    # Carrega inicialmente os valores
     addi	$t0, $zero, 40			# $t0 = $zero + 40
     addi	$t1, $a0, 0			# $t1 = $a0 + 0
     addi	$t2, $zero, 100			# $t4 = $zero + 100
+
+    # Calcula na base de 100%
     mult	$t1, $t2			# $t1 * $t2 = Hi and Lo registers
     mflo	$t1					# copy Lo to $t1
 
+    # Faz o cálculo da porcentagem
     div		$t1, $t0			# $t1 / $t0
     mflo	$t4					# $t2 = floor($t1 / $t0) 
     mfhi	$t3					# $t3 = $t1 % $t0 
 
+    # Carrega os valores de retorno
     addi	$v0, $t4, 0			# $v0 = $t2 + 0
     sub		$v1, $t2, $v0		# $v1 = $t2 - $v0
 
