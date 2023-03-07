@@ -80,6 +80,7 @@
 
     # formatar data
     cmd_formatar: .asciiz "formatar" # Comando para apagar todos os dados digitados
+    cmd_formatar_message_successfull: .asciiz "\nA memória foi formatada com sucesso!\n"
 
     cmd_exit: .asciiz "exit" # comando para sair do programa
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available." # comando que informa que o comando escrito não consta no sistema, e sugere usar o comando 'help' para obter ajuda
@@ -1351,6 +1352,9 @@ formatar:
     j		formatar				# jump to formatar
     
 formatar_finish:
+    # Envia mensagem de sucesso para o shell
+    la		$t0, cmd_formatar_message_successfull		# 
+    write_shell($t0)
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que mostra os comandos que podem ser utilizados pelo usuário do programa a partir da entrada "help".
