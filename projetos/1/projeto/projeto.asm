@@ -720,142 +720,149 @@ limpar_ap:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 
-# Função que mostra a informação do apartamento
+# Função que mostra as informações de um apartamento específico. Nesse caso, ao
+# especifica ro número do apartamento, todos os dados referentes à ele são exibidos
+# no MMIO
 info_ap:
-    # Pula e Armazena a entrada para info_ap
-    addi	$a0, $s0, 0			# $a0 = $s0 + 0
-    jal		jump_prefix				# jump to jump_prefix and save position to $ra
-    addi	$t6, $v0, 0			# $t0 = $v0 + 0
-    addi	$s7, $s2, 0			# $t0 = $v0 + 0
+    # Pula e Armazena a entrada para info_ap (o número do apartamento)
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0, contém o endereço do comando
+    jal		jump_prefix			# realiza o jump para 'jump_prefix' e salva a posição em $ra
+    addi	$t6, $v0, 0			# $t6 = $v0 + 0, $t6 passa a conter apenas o valor referente ao número do apartamento
+    addi	$s7, $s2, 0			# $s7 = $s2 + 0, $s7 passa a conter o endereço da linked list
 
     # Verifica o formato X0Z do número do apartamento
     lb		$t0, 1($v0)		# Carrega um char na posição onde deveria estar o separador de X e Z
     lb		$t1, sep_apt_number		# Carrega o separador do andar (X) e apartamentos (Z), que é o '0'
-    bne		$t0, $t1, info_ap_error_format	# se $t0 != $t1 vá para info_ap_error_format
+    bne		$t0, $t1, info_ap_error_format	# se $t0 != $t1 vá para 'info_ap_error_format'
     
     # Verifica se o andar é válido ([0,9])
     lb		$t0, 0($v0)		# Carrega um char na posição onde deveria ser o andar
     subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Converter de char para decimal
     slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => Verifica se é menor que 10
-    beq		$t0, $zero, info_ap_error_invalid_floor	# se $t0 == $zero vá para info_ap_error_invalid_floor
+    beq		$t0, $zero, info_ap_error_invalid_floor	# se $t0 == $zero vá para 'info_ap_error_invalid_floor'
 
-    # Check format -<option1>  OBS: Não possui um limite para os apartamentos [1:4]. Verificar como fazer.
-    lb		$t0, 3($v0)		# carrega o endereço 3 de v0 em t0 byte por byte
-    lb		$t1, sep_args	# carrega a função sep_args em t1 byte por byte
-    beq		$t0, $t1, info_ap_error_format_2 # se t1 == t0, vá para info_ap_error_format_2
+    # Checa o formato -<option1>  OBS: Não possui um limite para os apartamentos [1:4]. Verificar como fazer.
+    lb		$t0, 3($v0)		# carrega o endereço 3 de $v0 em $t0 byte por byte
+    lb		$t1, sep_args	# carrega a função 'sep_args' em $t1 byte por byte
+    beq		$t0, $t1, info_ap_error_format_2 # se $t1 == $t0, vá para 'info_ap_error_format_2'
 
     # Verifica se o apartamento está cadastrado no condomínio
-    addi    $a0, $v0, 0                         # a0 = v0 + 0
-    addi    $a1, $s2, 0                         # a1 = s2 + 0
-    jal     search_if_apt_exists                # faz um jal para verificar se o apartamento existe e retorna endereço do bloco do ap em $v0
-    beq     $v0, $zero, info_ap_apt_is_empty    # se v0 == zero, vá para info_ap_apt_is_empty
+    addi    $a0, $v0, 0                         # a0 = v0 + 0, $a0 passa a conter o endereço referente ao apartamento
+    addi    $a1, $s2, 0                         # a1 = s2 + 0, $a1 passa a conter o endereço da linked list
+    jal     search_if_apt_exists                # realiza um jal para 'search_if_apt_exists' a fim de verificar se o apartamento existe e retorna endereço do bloco do apartamento em $v0
+    beq     $v0, $zero, info_ap_apt_is_empty    # se $v0 == zero, vá para 'info_ap_apt_is_empty'
 
+# Função que realiza a escrita no MMIO dos moradores do apartamento pesquisado
 escrever_moradores:
-     # Pegando as informações de um apartamento específico e imprimindo no shell 
-    la      $t0, cmd_info_ap_message_ap
-    write_shell($t0)
-    la      $a0, 0($v0) #
-    write_shell($t0)
-    la      $v0, 1($v0)
-    write_shell($t0)
+    la      $t0, cmd_info_ap_message_ap # carrega a string para referenciar o apartamento
+    write_shell($t0) # escrita no MMIO
+    la      $a0, 0($v0) # carrega o valor referente ao andar 
+    write_shell($t0) # escrita no MMIO
+    la      $v0, 1($v0) # carrega o valor referente ao apartamento
+    write_shell($t0) # escrita no MMIO
 
-    la      $t0, cmd_info_ap_message_moradores
-    write_shell($t0)
-    # Moradores {
+    la      $t0, cmd_info_ap_message_moradores # carrega a string para referenciar o(s) morador(es)
+    write_shell($t0) # escrita no MMIO
+   
     la      $t0, 7($v0)     # primeiro morador (tem que ter pelo menos um morador no apartamento)
-    write_shell($t0)
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
-
+    write_shell($t0) # escrita no MMIO
+    la		$t0, nl		# carrega o endereço de \n em $t0
+    write_shell($t0) # imprime o \n
     
     # morador 2 (se existir)
     la      $t0, 29($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
-    write_shell($t0)
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
+    write_shell($t0) # escrita no MMIO
+    la		$t0, nl		# carrega o endereço de \n em $t0
+    write_shell($t0) # imprime o \n
 
     # morador 3 (se existir)
     la      $t0, 51($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
-    write_shell($t0)
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
+    write_shell($t0) # escrita no MMIO
+    la		$t0, nl		# carrega o endereço de \n em $t0
+    write_shell($t0) # imprime o \n
 
     # morador 4 (se existir)
     la      $t0, 73($v0)    # verifica se existe um segundo morador
     beq     $t0, $zero, jump_to_auto
-    write_shell($t0)
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
+    write_shell($t0) # escrita no MMIO
+    la		$t0, nl		# carrega o endereço de \n em $t0
+    write_shell($t0) # imprime o \n
 
     # morador 5 (se existir)
     la      $t0, 95($v0)    # verifica se existe um segundo morador
-    beq     $t0, $zero, jump_to_auto
-    write_shell($t0)
-    j       jump_to_auto
-     # }
+    beq     $t0, $zero, jump_to_auto # se $t0 == $zer0 então vá para 'jump_to_auto'
+    write_shell($t0) # escrita no MMIO
+    j       jump_to_auto # realiza o jump para 'jump_to_auto'
 
-
+# Função que realiza o procedimento para imprimir o tipo do veículo (c ou m)
 jump_to_auto:
-    lb		$t1, cmd_ad_auto_type_carro		# 
-    lb		$t2, 117($v0)		# 
-    beq		$t1, $t2, imprime_carro	# if $t1 == $t2 then goto imprime_carro
-    lb      $t1, cmd_ad_auto_type_moto
-    beq     $t1, $t2, imprime_moto
-    j       clear_current_shell_cmd
+    lb		$t1, cmd_ad_auto_type_carro		# carrega o tipo c
+    lb		$t2, 117($v0)		# carrega o byte presente na posição 117
+    beq		$t1, $t2, imprime_carro	# se $t1 == $t2 vá para 'imprime_carro'
+    lb      $t1, cmd_ad_auto_type_moto # carrega o tipo m
+    beq     $t1, $t2, imprime_moto # se $t1 == $t2 vá para 'imprime_moto'
+    j       clear_current_shell_cmd # realiza o jump para 'clear_current_shell_cmd'
 
+# Função que imprime as informações referentes ao carro
 imprime_carro:
-    la      $t0, cmd_info_ap_message_carro
-    write_shell($t0)
-    la      $t0, 118($v0)
-    write_shell($t0)
-    la      $t0, cmd_info_ap_message_cor
-    write_shell($t0)
-    la      $t0, 139($v0)
-    write_shell($t0)
-    j       clear_current_shell_cmd
+    la      $t0, cmd_info_ap_message_carro # carrega a string do nome do carro
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 118($v0) # carrega o valor referente ao nome do carro presente na posição 118
+    write_shell($t0) # escrita no MMIO
+    la      $t0, cmd_info_ap_message_cor # carrega a string da cor do carro
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 139($v0) # carrega o valor referente a cor do carro presente na posição 139
+    write_shell($t0) # escrita no MMIO
+    j       clear_current_shell_cmd # realiza o jump para 'clear_current_shell_cmd'
 
+# Função que imprime as informações referentes a moto 1
 imprime_moto:
-    la      $t0, cmd_info_ap_message_moto
-    write_shell($t0)
-    la      $t0, 118($v0)
-    write_shell($t0)
-    la      $t0, cmd_info_ap_message_cor
-    write_shell($t0)
-    la      $t0, 139($v0)
-    write_shell($t0)
+    la      $t0, cmd_info_ap_message_moto # carrega a string para referenciar a moto
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 118($v0) # carrega o valor referente ao nome da moto presente na posição 118
+    write_shell($t0) # escrita no MMIO
+    la      $t0, cmd_info_ap_message_cor # carrega a string para referenciar a cor da moto
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 139($v0) # carrega o valor referente a cor da moto presente na posição 139
+    write_shell($t0) # escrita no MMIO
     
-    lb      $t0, 155($v0)
-    bne     $t0, $zero, imprime_moto_2
-    j       clear_current_shell_cmd
+    lb      $t0, 155($v0) # carrega o primeiro byte da posição 155 referente a segunda moto, para verificar se existe uma outra
+    bne     $t0, $zero, imprime_moto_2 # se $t0 != 0 então vá para 'imprime_moto_2'
+    j       clear_current_shell_cmd # realiza o jump para 'clear_current_shell_cmd'
 
+# Função que imprime as informações referentes a moto 2
 imprime_moto_2:
-    la      $t0, cmd_info_ap_message_moto
-    write_shell($t0)
-    la      $t0, 156($v0)
-    write_shell($t0)
-    la      $t0, cmd_info_ap_message_cor
-    write_shell($t0)
-    la      $t0, 177($v0)
-    write_shell($t0)
-    j       clear_current_shell_cmd
+    la      $t0, cmd_info_ap_message_moto # carrega a string para referenciar a moto
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 156($v0) # carrega o valor referente ao nome da moto presente na posição 156
+    write_shell($t0) # escrita no MMIO
+    la      $t0, cmd_info_ap_message_cor # carrega a string para referenciar a cor da moto
+    write_shell($t0) # escrita no MMIO
+    la      $t0, 177($v0) # carrega o valor referente a cor da moto presente na posição 177
+    write_shell($t0) # escrita no MMIO
+    j       clear_current_shell_cmd # realiza o jump para 'clear_current_shell_cmd'
 
+# Função que indica caso o apartamento deseja não exista no sistema
 info_ap_apt_is_empty:
-    print_error(cmd_info_ap_apt_is_empty)
-    j       clear_current_shell_cmd         # jump to write_current_shell_cmd #mudar para clear_current_shell
+    print_error(cmd_info_ap_apt_is_empty) # imprime a mensagem de erro no MMIO
+    j       clear_current_shell_cmd         # jump para 'clear_current_shell_cmd'
 
+# Função que indica caso o apartamento digitado não exista no sistema
 info_ap_error_format:
-    print_error(cmd_info_ap_error_format)
-    j       clear_current_shell_cmd         # jump to write_current_shell_cmd
+    print_error(cmd_info_ap_error_format) # imprime a mensagem de erro no MMIO
+    j       clear_current_shell_cmd         # jump para 'clear_current_shell_cmd'
 
+# Função que indica caso o comando digitado não cumpra com formato padrão estabelecido: info_ap-<option1>, pois não digitou a <option1>
 info_ap_error_format_2:
-    print_error(cmd_info_ap_error_format_2)
-    j       clear_current_shell_cmd
+    print_error(cmd_info_ap_error_format_2) # imprime a mensagem de erro no MMIO
+    j       clear_current_shell_cmd # jump para 'clear_current_shell_cmd'
 
+# Função que indica caso o andar digitado não existe no sistema
 info_ap_error_invalid_floor:
-    print_error(cmd_info_ap_error_invalid_floor)
-    j		clear_current_shell_cmd				# jump to write_current_shell_cmd
+    print_error(cmd_info_ap_error_invalid_floor) # imprime a mensagem de erro no MMIO
+    j		clear_current_shell_cmd				# jump para 'clear_current_shell_cmd'
 
 
 info_geral:
