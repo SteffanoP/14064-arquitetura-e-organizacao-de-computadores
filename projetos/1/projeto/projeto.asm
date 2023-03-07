@@ -860,64 +860,64 @@ info_ap_error_invalid_floor:
 
 info_geral:
     
-    la		$t0, cmd_info_geral_message_nao_vazios		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_nao_vazios		# carrega endereço de cmd_info_geral_message_nao_vazios em $t0
+    write_shell($t0)                                    # escreve as informações no shell
 
-    # Allocate 32 of bytes in memory
-    addi	$a0, $0, 32		# 32 bytes to be allocated
-    addi	$v0, $0, 9		# system call #9 - allocate memory
-    syscall					# execute
+    # Aloca 32 bytes na memória
+    addi	$a0, $0, 32		# 32 bytes a serem alocados
+    addi	$v0, $0, 9		# system call #9 - aloca memória
+    syscall					# executa
     addi	$s1, $v0, 0			# $s1 = $v0 + 0
 
     # Calcula a quantidade de nós na ll
-    addi	$a0, $s2, 0			# $a0 = $s2 + 0
-    jal		calculate_links_on_ll				# jump to calculate_links_on_ll and save position to $ra
-    addi	$s3, $v0, 0			# $a0 = $v0 + 0
+    addi	$a0, $s2, 0			                # $a0 = $s2 + 0
+    jal		calculate_links_on_ll				# jump para calculate_links_on_ll e salva para $ra
+    addi	$s3, $v0, 0			                # $a0 = $v0 + 0
 
     # Converte o inteiro em string
     addi	$a0, $s3, 0			# $a0 = $s3 + 0
     addi	$a1, $s1, 0			# $a1 = $s1 + 0 
-    jal		int2str				# jump to int2str and save position to $ra
+    jal		int2str				# jump para int2str e salva para $ra
     write_shell($s1)
 
-    la		$t0, cmd_info_geral_message_percentage_1		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_percentage_1		# carrega endereço de cmd_info_geral_message_percentage_1 em $t0
+    write_shell($t0)                                        # escreve as informações no shell
 
     # Calcula as porcentagens
     addi	$a0, $s3, 0			# $a0 = $s3 + 0
-    jal		calculate_info_geral_percentage				# jump to calculate_info_geral_percentage and save position to $ra
+    jal		calculate_info_geral_percentage				# jump para calculate_info_geral_percentage e salva para $ra
 
     # Converte o inteiro em string
     addi	$a0, $v0, 0			# $a0 = $v0 + 0
     addi	$a1, $s1, 0			# $a1 = $s1 + 0 
-    jal		int2str				# jump to int2str and save position to $ra
+    jal		int2str				# jump para int2str e salva para $ra
     write_shell($s1)
 
-    la		$t0, cmd_info_geral_message_percentage_2		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_percentage_2		# carrega endereço de cmd_info_geral_message_percentage_2 em $t0
+    write_shell($t0)                                        # escreve as informações no shell
     
-    la		$t0, cmd_info_geral_message_vazios		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_vazios		# carrega endereço de cmd_info_geral_message_vazios em $t0
+    write_shell($t0)                                # escreve as informações no shell
 
     # Converte o inteiro em string
     addi	$t0, $zero, 40			# $t0 = $zero + 40
     sub		$a0, $t0, $s3		# $a0 = $t0 - $s3
     addi	$a1, $s1, 0			# $a1 = $s1 + 0
-    jal		int2str				# jump to int2str and save position to $ra
+    jal		int2str				# jump para int2str e salva para $ra
     write_shell($s1)
 
-    la		$t0, cmd_info_geral_message_percentage_1		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_percentage_1		# carrega endereço de cmd_info_geral_message_percentage_1 em $t0
+    write_shell($t0)                                        # escreve as informações no shell
 
     addi	$a0, $v1, 0			# $a0 = $v1 + 0
     addi	$a1, $s1, 0			# $a1 = $s1 + 0 
-    jal		int2str				# jump to int2str and save position to $ra
+    jal		int2str				# jump para int2str e salva para $ra
     write_shell($s1)
 
-    la		$t0, cmd_info_geral_message_percentage_2		# 
-    write_shell($t0)
+    la		$t0, cmd_info_geral_message_percentage_2		# carrega endereço de cmd_info_geral_message_percentage_2 em $t0
+    write_shell($t0)                                        # escreve as informações no shell
     
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 # Função que trabalha no comando salvar. A partir daqui ocorre o tratamento dos dados
 # para serem armazenados no arquivo .csv. Os dados presentes na linked list são lidos
