@@ -1346,59 +1346,59 @@ finish_strncmp:
     jr		$ra					# jump to $ra
 
 check_prefix:
-    # input:
-    # $a0 => prefix to check
-    # $a1 => the command
-    # return:
-    # $zero => if prefix is equals to the command prefix
-    # -1 or 1 => if prefix is not equal to the command prefix
+    # entrada:
+    # $a0 => prefixo a ser verificado
+    # $a1 => o comando
+    # retorno:
+    # $zero => se o prefixo é igual ao comando prefixo
+    # -1 ou 1 => if prefix é diferente ao comando prefixo
 
-    # Save $ra before jump and link
+    # salva $ra antes de dar jump e linkar
     subi	$sp, $sp, 4			# $sp = $sp - 4
-    sw		$ra, 0($sp)		# 
+    sw		$ra, 0($sp)		    # salva a world em $ra na posição 0 da pilha referenciada pelo endereço armazenado no registrador $sp
 
 check_prefix_len_word:
-    jal		strlen				# jump to strlen and save position to $ra
+    jal		strlen				# jump para strlen e salva posição em $ra
     
 check_prefix_compare_words:
-    #Check prefix word
+    # verifica prefixo da palavra
     addi	$a3, $v0, 0			# $a3 = $v0 + 0
-    jal		strncmp				# jump to strncmp and save position to $ra
-    bne		$v0, $zero, check_prefix_finish	# if $v0 != $zero then goto check_prefix_finish
+    jal		strncmp				# jump para strncmp e salva posição em $ra
+    bne		$v0, $zero, check_prefix_finish	# se $v0 != $zero então vá para check_prefix_finish
 
-    # Load separator
-    la		$t2, sep_args		# 
-    lb		$t2, 0($t2)		# 
+    # carrega o separador
+    la		$t2, sep_args		# carrega o endereço de sep_args no reg $t2
+    lb		$t2, 0($t2)		    # carrega o byte presente na posição 0 de $t2 em $t2
 
-    add		$t0, $a1, $a3		# $t0 = $a1 + $a3
-    lb		$t0, 0($t0)		# 
-    beq		$t0, $t2, check_prefix_finish	# if $t0 == $t2 then goto check_prefix_finish
-    addi	$v0, $v0, 1			# $v0 = $v0 + 1
+    add		$t0, $a1, $a3		            # $t0 = $a1 + $a3
+    lb		$t0, 0($t0)		                # carrega o byte presente na posição 0 de $t0 em $t0
+    beq		$t0, $t2, check_prefix_finish	# se $t0 == $t2 então vá para check_prefix_finish
+    addi	$v0, $v0, 1			            # $v0 = $v0 + 1
     
 check_prefix_finish:
-    # Get $ra back
-    lw		$ra, 0($sp)		# 
+    # pega $ra de volta
+    lw		$ra, 0($sp)		# carrega uma palavra (4 bytes) do endereço de memória apontado pelo registro de ponteiro de pilha ($sp) e armazena em registro $t0
     addi	$sp, $sp, 4			# $sp = $sp + 4
 
-    jr		$ra					# jump to $ra
+    jr		$ra					# jump para $ra
 
 jump_prefix:
-    # Input:
-    # $a0 => prefix address to jump
-    # return:
-    # address without prefix
+    # entrada:
+    # $a0 => endereço do prefixo a dar um jump
+    # retorno:
+    # endereço sem prefixo
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
-    lw		$t1, sep_args		# 
+    lw		$t1, sep_args		# carrega uma palavra (4 bytes) do endereço de memória apontado sep_args e armazena em reg $t0
     
 jump_prefix_loop_until_sep_arg:
-    lb		$t2, 0($t0)		# 
-    beq		$t2, $t1, jump_prefix_end	# if $t0 == $t1 then goto jump_prefix_end
-    addi	$t0, $t0, 1			# $t0 = $t0 + 1
-    j		jump_prefix_loop_until_sep_arg				# jump to jump_prefix_loop_until_sep_arg
+    lb		$t2, 0($t0)		                    # carrega o byte presente na posição 0 de $t0 em $t2
+    beq		$t2, $t1, jump_prefix_end	        # se $t0 == $t1 então vá para jump_prefix_end
+    addi	$t0, $t0, 1			                # $t0 = $t0 + 1
+    j		jump_prefix_loop_until_sep_arg		# jump para jump_prefix_loop_until_sep_arg
     
 jump_prefix_end:
-    addi	$v0, $t0, 1			# $v0 = $t0 + 1 | Get address after the sep
-    jr		$ra					# jump to $ra
+    addi	$v0, $t0, 1			# $v0 = $t0 + 1 | Pega o endereço depois do separador
+    jr		$ra					# jump para $ra
 
 # Função que realiza a cópia de strings, incluindo o \0. Ela recebe 2 parâmetros:
 # $a0 ==> o endereço de destino, onde a string será copiada
@@ -1493,7 +1493,7 @@ search_morador_in_apt_loop:
     addi	$t1, $t1, 22			# $t1 = $t1 + 22
 
     # E reinicia o loop
-    j		search_morador_in_apt_loop				# jump to search_morador_in_apt_loop
+    j		search_morador_in_apt_loop		# jump to search_morador_in_apt_loop
 
 search_morador_in_apt_finish_not_found:
     addi	$t1, $zero, 0			# $t1 = $zero + 0
@@ -1509,25 +1509,25 @@ check_apt:
     addi	$t1, $a1, 0			# $t1 = $a1 + 0
 
     # Verifica se o endereço armazenado em $t1 está vazio
-    beq		$t1, $zero, check_apt_false	# if $t1 == $zero then goto check_apt_false
+    beq		$t1, $zero, check_apt_false	# se $t1 == $zero então vá para check_apt_false
 
     # Verifica o andar
-    lb		$t2, 0($t0)		# 
-    lb		$t3, 0($t1)		#
-    bne		$t2, $t3, check_apt_false	# if $t2 != $t3 then goto check_apt_false
+    lb		$t2, 0($t0)		# carrega o byte presente na posição 0 de $t0 em $t2
+    lb		$t3, 0($t1)		# carrega o byte presente na posição 0 de $t1 em $t3
+    bne		$t2, $t3, check_apt_false	# se $t2 != $t3 então vá para check_apt_false
 
     # Verifica o número do apt
-    lb		$t2, 2($t0)		# 
-    lb		$t3, 1($t1)		# 
-    bne		$t2, $t3, check_apt_false	# if $t2 != $t3 then goto check_apt_false
+    lb		$t2, 2($t0)		# carrega o byte presente na posição 2 de $t0 em $t2
+    lb		$t3, 1($t1)		# carrega o byte presente na posição 1 de $t1 em $t3
+    bne		$t2, $t3, check_apt_false	# se $t2 != $t3 então vá para check_apt_false
 
     # O apartamento está nesse bloco (True):
-    addi	$v0, $zero, 1			# $v0 = $zero + 1
-    jr		$ra					# jump to $ra
+    addi	$v0, $zero, 1		# $v0 = $zero + 1
+    jr		$ra					# jump para $ra
     
 check_apt_false:
-    addi	$v0, $zero, 0			# $v0 = $zero + 0
-    jr		$ra					# jump to $ra
+    addi	$v0, $zero, 0		# $v0 = $zero + 0
+    jr		$ra					# jump para $ra
 
 # Função que armazena o nome do morador em um apartamento verificando o devido offset
 store_morador:
@@ -1581,19 +1581,19 @@ delete_morador:
 # Função que calcula o tamanho de uma String até um separador
 # Porém, caso um \0 aconteça, termina ali
 strlen_until_sep:
-    addi	$v0, $a0, 0			# $t0 = $a0 + 0
-    addi	$a1, $a1, 0			# $a1 = $a1 + 0
+    addi	$v0, $a0, 0			# $t0 = $a0 + 0 | Carrega as informações do comando digitado
+    addi	$a1, $a1, 0			# $a1 = $a1 + 0 | Carrega as informações do comando digitado
 
 strlen_until_sep_loop_over_str:
-    lb		$t2, 0($v0)		# 
-    beq		$t2, $a1, strlen_until_sep_finish	# if $t2 == $t1 then goto strlen_until_sep_finish
-    beq		$t2, $zero, strlen_until_sep_finish	# if $t2 == $zero then goto strlen_until_sep_finish
-    addi	$v0, $v0, 1			# $t0 = $t0 + 1
-    j strlen_until_sep_loop_over_str
+    lb		$t2, 0($v0)		                        # carrega o byte presente na posição 0 de $v0 em $t2
+    beq		$t2, $a1, strlen_until_sep_finish	    # se $t2 == $t1 então vá para strlen_until_sep_finish
+    beq		$t2, $zero, strlen_until_sep_finish	    # se $t2 == $zero então vá para strlen_until_sep_finish
+    addi	$v0, $v0, 1			                    # $t0 = $t0 + 1
+    j strlen_until_sep_loop_over_str                # jump para strlen_until_sep_loop_over_str
 
 strlen_until_sep_finish:
     sub		$v0, $v0, $a0		# $v0 = $v0 - $a0
-    jr		$ra					# jump to $ra
+    jr		$ra					# jump para $ra
 
 # Armazena o automóvel em algum slot disponível
 store_auto:
