@@ -422,8 +422,7 @@ ad_morador_into_existing_apt:
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
     addi	$a2, $t1, 0			# $a2 = $t1 + 0
     jal		store_morador		# jump para store_morador e salva a posição para $ra
-    
-    write_shell($s2)
+
     # o armazenamento foi concluído, logo retorna uma mensagem de sucesso e limpa o comando
     la		$t0, nl		                                # carrega o endereço de nl para o reg $t0
     write_shell($t0)                                    # Print de \n
@@ -620,7 +619,7 @@ rm_morador:
     addi	$t6, $v0, 0			# $t0 = $v0 + 0
 
     # Verifica se só há 1 morador
-    lw		$t1, 0($s1)		# carrega byte da posição 0 de $s1 em $t1
+    lw		$t1, 4($t7)		# carrega byte da posição 0 de $s1 em $t1
     subi	$t1, $t1, 1			# $t1 = $t1 - 1
     bne		$t1, $zero, rm_morador_mais_de_um_morador	# se $t1 != $zero então vá para rm_morador_mais_de_um_morador
     # Verifica se é o primeiro e único morador
@@ -667,10 +666,19 @@ rm_morador:
 
 # Mensagem de erro de último morador removido: apartamento vazio.
 rm_morador_removes_last_morador:
+    # Subtrai a quantidade total de moradores
+    lw		$t0, 4($t7)		# carrega palavra da posição 4 de $t7 em $t0
+    subi	$t0, $t0, 1			# $t0 = $t0 - 1
+    sw		$t0, 4($t7)		# salva palavra de $t0 na posição 4 de $t7
+    
     addi	$a0, $t7, 96			# $a0 = $t7 + 96
     addi	$a1, $zero, 21			# $a1 = $zero + 21
     jal		fill_with_null_byte				# pular para fill_with_null_byte e salvar posição em $ra
     
+    # Chama a mensagem de sucesso
+    la		$t0, cmd_rm_morador_successfull_message		# 
+    write_shell($t0)
+
     j		clear_current_shell_cmd				# pular para clear_current_shell_cmd
 
 # Mensagem de erro de último morador não existente no apartamento: morador não encontrado.
