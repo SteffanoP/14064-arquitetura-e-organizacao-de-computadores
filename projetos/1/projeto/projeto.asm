@@ -243,161 +243,161 @@ clear_current_shell_cmd:
 
 # Função que adiciona morador ao condomínio
 ad_morador:
-    addi	$a0, $s0, 0			# $a0 = $s0 + 0
-    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    addi	$a0, $s0, 0			    # $a0 = $s0 + 0
+    jal		jump_prefix				# jump para jump_prefix e salva a posição para $ra
 
-    # Check format <option1>-<option2>
-    lb		$t0, 3($v0)		# 
-    lb		$t1, sep_args	#
-    bne		$t0, $t1, ad_morador_error_format_1	# if $t0 != $t1 then goto ad_morador_error_format
+    # verifica formato <option1>-<option2>
+    lb		$t0, 3($v0)		# carrega byte por byte o conteúdo do endereço 3 do reg v0 em t0
+    lb		$t1, sep_args	# carrega byte por byte a label 'sep_args' em t1 para verificar a separação dos argumentos
+    bne		$t0, $t1, ad_morador_error_format_1	# if $t0 != $t1 vá para ad_morador_error_format
 
-    # Check format X0Z from apartment's number
-    lb		$t0, 1($v0)		# Load char on the position whereas should be the separator from X and Z
-    lb		$t1, sep_apt_number		# Load separator of floor (X) and apartaments (Z) => ("0")
-    bne		$t0, $t1, ad_morador_error_format_2	# if $t0 != $t1 then goto ad_morador_error_format_2
+    # verifica formato X0Z do número do apartamento
+    lb		$t0, 1($v0)		# carrega char na posição onde deveria ser o separador de X e Z
+    lb		$t1, sep_apt_number		# carrega o separador do andar (X) e apartamentos (Z) => ("0")
+    bne		$t0, $t1, ad_morador_error_format_2	# se $t0 != $t1 vá para ad_morador_error_format_2
 
-    # Check if floor is valid ([0,9])
-    lb		$t0, 0($v0)		# Load char on the position whereas should be the floor
-    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Convert char into dec
-    slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => Check if less than 10
-    beq		$t0, $zero, ad_morador_error_invalid_floor	# if $t0 == $zero then goto ad_morador_error_invalid_floor
+    # verifica se andar é válido ([0,9])
+    lb		$t0, 0($v0)		# carrega um char na posição onde deveria ser o andar
+    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => converte char em decimal
+    slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => verifica se é menor que 10
+    beq		$t0, $zero, ad_morador_error_invalid_floor	# se $t0 == $zero vá para ad_morador_error_invalid_floor
 
-    # Check if Apartament Number is valid
-    lb		$t0, 2($v0)		# Load char on the position whereas should be the apartment number
-    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Convert char into dec
-    slti	$t1, $t0, 5			# $t1 = ($t0 < 5) ? 1 : 0 => Check if less than 5
-    beq		$t1, $zero, ad_morador_error_invalid_apartment	# if $t1 == $zero then goto ad_morador_error_invalid_apartment
-    # Check if is not zero
-    beq		$t0, $zero, ad_morador_error_invalid_apartment	# if $t0 == $zero then goto ad_morador_error_invalid_apartment
+    # verifica se o número do apartamento é válido
+    lb		$t0, 2($v0)		# carrega um char na posição onde deveria ser o número do apartamento
+    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => converte char em decimal
+    slti	$t1, $t0, 5			# $t1 = ($t0 < 5) ? 1 : 0 => verifica se é menor 5
+    beq		$t1, $zero, ad_morador_error_invalid_apartment	# se $t1 == $zero vá para ad_morador_error_invalid_apartment
+    # verifica se não é zero
+    beq		$t0, $zero, ad_morador_error_invalid_apartment	# se $t0 == $zero vá para ad_morador_error_invalid_apartment
     
-    # Check size of the string from morador name's
-    addi	$t6, $v0, 0			# $t6 = $v0 + 0 | Move $v0 into $t6, because $t6 is the last temporary to be assumed as temp
-    addi	$a0, $t6, 4			# $a0 = $t6 + 4 | Move $t6 into $a0.
-    jal		strlen				# jump to strlen and save position to $ra
-    slti	$t0, $v0, 21			# $t0 = ($v0 < 21) ? 1 : 0 | Check if size is less or equals the limit of 20 characters
-    beq		$t0, $zero, ad_morador_error_invalid_name_size	# if $t0 == $zero then goto ad_morador_error_invalid_name_size
+    # verifica tamanho da string do nome do morador
+    addi	$t6, $v0, 0			# $t6 = $v0 + 0 | Move $v0 para $t6, pois $t6 é o último temporário a ser assumido como temporário
+    addi	$a0, $t6, 4			# $a0 = $t6 + 4 | Move $t6 para $a0.
+    jal		strlen				# jump para strlen e salva posição em $ra
+    slti	$t0, $v0, 21			# $t0 = ($v0 < 21) ? 1 : 0 | verifica se tamanho da string do nome do moradortamanho é menor ou igual ao limite de 20 caracteres
+    beq		$t0, $zero, ad_morador_error_invalid_name_size	# se $t0 == $zero vá para ad_morador_error_invalid_name_size
 
     # Verifica se o apartamento já existe
     addi	$a0, $t6, 0			# $a0 = $t6 + 0
     addi	$a1, $s2, 0			# $a1 = $s2 + 0
-    jal		search_if_apt_exists				# jump to search_if_apt_exists and save position to $ra
-    bne		$v0, $zero, ad_morador_into_existing_apt	# if $v0 != $zero then goto ad_morador_into_existing_apt
+    jal		search_if_apt_exists				# jump para search_if_apt_exists e salva posição em $ra
+    bne		$v0, $zero, ad_morador_into_existing_apt	# se $v0 != $zero vá para ad_morador_into_existing_apt
 
     # Antes de alocar um novo bloco de memória, verifica se há endereços disponíveis na stack
-    lw		$t0, 0($sp)		# 
-    beq		$t0, $zero, ad_morador_allocate_memory	# if $t0 == $zero then goto ad_morador_allocate_memory
+    lw		$t0, 0($sp)		# carrega uma palavra (4 bytes) do endereço de memória apontado pelo registro de ponteiro de pilha ($sp) e armazena em registro $t0
+    beq		$t0, $zero, ad_morador_allocate_memory	# se $t0 == $zero vá para ad_morador_allocate_memory
     addi	$sp, $sp, 4			# $sp = $sp + 4
-    j		ad_morador_store_object_in_ll				# jump to ad_morador_store_object_in_ll
+    j		ad_morador_store_object_in_ll				# jump para ad_morador_store_object_in_ll
 
     ad_morador_allocate_memory:
     # A partir daqui aloca um novo bloco de memória para o apartamento
-    # Allocate necessary space to store object
-    # Allocate 200 of bytes in memory
-    addi	$a0, $0, 200		# 200 bytes to be allocated
-    addi	$v0, $0, 9		# system call #9 - allocate memory
-    syscall					# execute
+    # aloca espaço necessário para armazenar um objeto
+    # Aloca 200 bytes na memória
+    addi	$a0, $0, 200		# 200 bytes a serem alocados
+    addi	$v0, $0, 9		# system call #9 - aloca memória
+    syscall					# executa
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
     
     ad_morador_store_object_in_ll:
-    # Store object in linked list    
+    # armazena um objeto na lista ligada (linked list)   
     addi	$t1, $s2, 0			# $t1 = $s2 + 0
-    bne		$s2, $zero, ad_morador_check_where_to_store	# if $s2 != $zero then goto ad_morador_check_where_to_store
+    bne		$s2, $zero, ad_morador_check_where_to_store	# se $s2 != $zero vá para ad_morador_check_where_to_store
     addi	$s2, $t0, 0			# $s2 = $t0 + 0
     addi	$t1, $s2, 0			# $t1 = $s2 + 0
 
 ad_morador_check_where_to_store:
-    # Verifies where in the linked list is available to store data
-    # It goes from the address stored in $s2 and tries to 
-    lb		$t2, 1($t1)		#
-    beq		$t2, $zero, ad_morador_store_morador	# if $t2 == $zero then goto ad_morador_store_morador
-    lw		$t2, 196($t1)		# 
-    beq		$t2, $zero, ad_morador_jump_to_next_block	# if $t2 == $zero then goto ad_morador_jump_to_next_block
+    # Verifica onde está disponível para armazenar dados na lista ligada (linked list)
+    # Vai do endereço armazenado em $s2 e tenta
+    lb		$t2, 1($t1)		# carrega 1 byte da memória no endereço 1 de $t1, acrescido de um deslocamento de 1 byte, e armazena em $t2.
+    beq		$t2, $zero, ad_morador_store_morador	# se $t2 == $zero vá para ad_morador_store_morador
+    lw		$t2, 196($t1)		# carrega uma palavra (4 bytes) da memória no endereço 196 do reg $t1,  e armazena em $t2.
+    beq		$t2, $zero, ad_morador_jump_to_next_block	# se $t2 == $zero vá para ad_morador_jump_to_next_block
     addi	$t1, $t2, 0			# $t1 = $t2 + 0
-    j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
+    j		ad_morador_check_where_to_store				# jump para ad_morador_check_where_to_store
 
 ad_morador_jump_to_next_block:
-    # In case the current block is already fullfilled, jump to the next block
-    sw		$t0, 196($t1)		# 
+    # Em caso de o bloco atual já está preenchido, pula para o próximo bloco
+    sw		$t0, 196($t1)		# armazena o conteúdo do registrador $t0 (4 bytes) na memória no endereço 196 do reg $t1
     addi	$t1, $t0, 0			# $t1 = $t0 + 0
-    j		ad_morador_check_where_to_store				# jump to ad_morador_check_where_to_store
+    j		ad_morador_check_where_to_store				# jump para ad_morador_check_where_to_store
 
 ad_morador_store_morador:  
-    # Read from command and stores it in the current block
+    # lê do comando e armazena no bloco atual
     
-    # Floor and Apartment number
-    lb		$t3, 0($t6)		# 
-    sb		$t3, 0($t1)		# 
-    lb		$t3, 2($t6)		# 
-    sb		$t3, 1($t1)		# 
+    # andar e número do apartamento
+    lb		$t3, 0($t6)		# carrega um byte (8 bits) da memória no endereço 0 do registrador $t6, e armazena o valor no reg $t3.
+    sb		$t3, 0($t1)		# salva um byte (8 bits) da memória no endereço 0 do registrador $t1, e armazena o valor no reg $t3.
+    lb		$t3, 2($t6)		# carrega um byte (8 bits) da memória no endereço 2 do registrador $t6, e armazena o valor no reg $t3.
+    sb		$t3, 1($t1)		# salva um byte (8 bits) da memória no endereço 1 do registrador $t1, e armazena o valor no reg $t3.
 
     # Adiciona +1 a quantidade de moradores
-    lw		$t3, 4($t1)		# 
+    lw		$t3, 4($t1)		# carrega uma palavra (4 bytes) da memória no endereço 4 do reg $t1, e armazena em reg $t3.
     addi	$t3, $t3, 1			# $t3 = $t3 + 1
-    sw		$t3, 4($t1)		#     
+    sw		$t3, 4($t1)		# salva uma palavra (4 bytes) da memória no endereço 4 do registrador $t1, e armazena o valor no reg $t3.
     
     # Armazena o nome do morador
     addi	$a0, $t1, 0			# $a0 = $t1 + 0
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
     addi	$a2, $t3, 0			# $a2 = $t3 + 0
-    jal		store_morador				# jump to store_morador and save position to $ra
+    jal		store_morador				# jump para store_morador e salva a posição to $ra
 
-    # Storing is successfull, than shall return success message and clear command
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
-    la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
-    write_shell($t0) # Print Sucessfull message
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    # o armazenamento foi concluído, logo retorna uma mensagem de sucesso e limpa o comando
+    la		$t0, nl		                                # carrega o endereço de nl para o reg $t0
+    write_shell($t0)                                    # Print de \n
+    la		$t0, cmd_ad_morador_sucessfull_message		# carrega endereço da mensagem de sucesso
+    write_shell($t0)                                    # Print mensagem de sucesso
+    j		clear_current_shell_cmd				        # jump para clear_current_shell_cmd
 
 ad_morador_into_existing_apt:
     addi	$t0, $v0, 0			# $t0 = $v0 + 0
     
     # Verifica se o apartamento está cheio
-    lw		$t1, 4($t0)		#
+    lw		$t1, 4($t0)		# carrega uma palavra (4 bytes) da memória no endereço 4 do reg $t0, e armazena em reg $t1.
     addi	$t2, $t1, 0			# $t2 = $t1 + 0
     slti	$t2, $t2, 5			# $t2 = ($t2 < 5) ? 1 : 0
-    beq		$t2, $zero, ad_morador_error_apt_is_full	# if $t2 == $zero then goto ad_morador_error_apt_is_full
+    beq		$t2, $zero, ad_morador_error_apt_is_full	# se $t2 == $zero vá para ad_morador_error_apt_is_full
 
     # Adiciona +1 a quantidade de moradores no apartamento
     addi	$t1, $t1, 1			# $t1 = $t1 + 1
-    sw		$t1, 4($t0)		# 
+    sw		$t1, 4($t0)		# salva uma palavra (4 bytes) da memória no endereço 4 do registrador $t0, e armazena o valor no reg $t1.
     
     # Armazena o nome do morador no slot disponível
     addi	$a0, $t0, 0			# $a0 = $t0 + 0
     addi	$a1, $t6, 0			# $a1 = $t6 + 0
     addi	$a2, $t1, 0			# $a2 = $t1 + 0
-    jal		store_morador				# jump to store_morador and save position to $ra
+    jal		store_morador		# jump para store_morador e salva a posição para $ra
     
     write_shell($s2)
-    # Storing is successfull, than shall return success message and clear command
-    la		$t0, nl		# 
-    write_shell($t0) # Print of \n
-    la		$t0, cmd_ad_morador_sucessfull_message		# Load Address of sucessfull message
-    write_shell($t0) # Print Sucessfull message
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    # o armazenamento foi concluído, logo retorna uma mensagem de sucesso e limpa o comando
+    la		$t0, nl		                                # carrega o endereço de nl para o reg $t0
+    write_shell($t0)                                    # Print de \n
+    la		$t0, cmd_ad_morador_sucessfull_message		# carrega endereço da mensagem de sucesso
+    write_shell($t0)                                    # Print mensagem de sucesso
+    j		clear_current_shell_cmd			        	# jump para clear_current_shell_cmd
 
 ad_morador_error_format_1:
     print_error(cmd_ad_morador_error_format_1)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 ad_morador_error_format_2:
     print_error(cmd_ad_morador_error_format_2)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 ad_morador_error_invalid_floor:
     print_error(cmd_ad_morador_error_invalid_floor)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 ad_morador_error_invalid_apartment:
     print_error(cmd_ad_morador_error_invalid_apartament)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 ad_morador_error_invalid_name_size:
     print_error(cmd_ad_morador_error_invalid_name_size)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 ad_morador_error_apt_is_full:
     print_error(cmd_ad_morador_error_apt_is_full)
-    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
+    j		clear_current_shell_cmd				# jump para clear_current_shell_cmd
 
 # Função que adiciona um automóvel a um apartamento
 ad_auto:
