@@ -61,16 +61,25 @@
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
 .text
 
+# Escreve o conteúdo de uma string no shell
+# %string_address => Endereço onde está localizada a string na
+# memória
 .macro write_shell (%string_address)
+    # Carrega a string
     la		$t0, (%string_address)	# 
+    # Carrega os endereços da interface MMIO
     lw		$t2, transmitter_data		# 
     lw		$t3, transmitter_ready		# 
     
+    # Envia o byte para o envio no display
+    # Exceto se o byte for /0
+    # Caso /0, envia para a saída da macro
     write_byte:
         lb		$t1, 0($t0)		# 
         beq		$t1, $zero, end_write	# if $t1 == $zero then goto finish_write
         sw		$t1, 0($t2)		# 
 
+    # Aguarda a confirmação do display que o byte foi escrito
     wait_display_to_write:
         lb		$t4, 0($t3)		# 
         beq		$t4, $zero, wait_display_to_write	# if $t0 == $zero then goto wait_display_to_write
@@ -80,128 +89,189 @@
     end_write:
 .end_macro
 
+# Aguarda por um novo caractere a ser digitado
 .macro wait_new_char
+    # Carrega o endereço de byte pronto no MMIO
     lw		$t0, receiver_ready		# 
+
+    # loop que aguarda por um novo caractere
     loop_wait_new_char:
         lb		$t2, 0($t0)		# 
         beq		$t2, $zero, loop_wait_new_char	# if $t2 == $zero then goto loop_wait_new_char
 
 .end_macro
 
+# Faz o print de um erro de acordo com a função dada
 .macro print_error (%data_label)
+    # Carrega o label do error
     la		$t0, %data_label		# 
+
+    # Faz o write no shell
     write_shell($t0)
 .end_macro
 
+# Pula para o próximo endereço do bloco da lista ligada
 .macro jump_to_next_ll (%current_ll_address)
+    # Carrega o próximo endereço baseado na lista ligada
     lw		%current_ll_address, 196(%current_ll_address) #
 .end_macro
 
+# Faz a inicialização do programa
 init:
+    # Carrega o endereço do usuário do shell e escreve-o
     la		$t0, shell_user		# 
     write_shell($t0)
     
-    # Allocate 64 of bytes in memory
+    # Aloca 64 bytes de memória para a escrita do conteúdo do shell
+    # O comando escrito no shell é armazenado em $s0
     addi	$a0, $0, 64		# 64 bytes to be allocated
     addi	$v0, $0, 9		# system call #9 - allocate memory
     syscall					# execute
-    addi	$s0, $v0, 0			# $s0 = $v0 + 0
+    addi	$s0, $v0, 0		# $s0 = $v0 + 0
     
 main:
+    # Aguarda por um novo caractere a ser digitado pelo usuário
     wait_new_char
+
+    # Carrega o caractere digitado pelo usuário
     lw		$s1, receiver_data
     lw		$t2, 0($s1)		# 
+
+    # Verifica se o caractere digitado é um '\n'
     lw		$t1, nl	# 
-    beq		$t2, $t1, process_command	# if $t0 == $t1 then goto exit
+    beq		$t2, $t1, process_command	# if $t0 == $t1 then goto process_command
+
+    # Verifica se o caractere digitado é um backspace
     lw		$t1, bs		# 
     beq		$t2, $t1, backspace	# if $t2 == $t1 then goto backspace
     
+    # Caso não seja nenhuma das funções acima, apenas concatena a digitação do comando
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     addi	$a1, $s1, 0			# $a1 = $t2 + 0
-    
     jal		strcat				# jump to strcat and save position to $ra
 
+    # Escreve o caractere digitado pelo usuário
     write_shell($s1)
     j		main				# jump to main
 
+# Ação que simula um backspace
 backspace:
+    # Carrega o byte ff para limpar o display
     la		$t0, ff		# 
     write_shell($t0)
+
+    # Carrega o usuário do shell para escrita
     la		$t0, shell_user		# 
     write_shell($t0)
-    
+
+    # Remove apenas o último caractere do comando já digitado
+    # Faz a remoção com a função strrm1
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     jal		strrm1				# jump to strrm1 and save position to $ra
+
+    # Escreve o comando com backspace
     write_shell($s0)
+
     j		main				# jump to main
 
+# Processa um comando digitado, após um enter ('\n')
 process_command:
-    # Command is a ASCII String on Address $s0 and it ends with \0
+    # O comando é uma string ASCII que é armazenado no endereço $0
+    # e terminada por um \0
 
-    # If no command is written, then go back to main
+    # Se nenhum comando é escrito, então volta para a main
     lb		$t0, 0($s0)		    # 
     beq		$t0, $zero, write_current_shell_cmd	# if $t0 == $zero then goto write_current_shell_cmd
 
-    # Command ad_morador
-    la		$a0, cmd_ad_morador	# 
-    addi	$a1, $s0, 0			# $a1 = $s0 + 0
-    jal		check_prefix		# jump to check_prefix and save position to $ra
+    # Verifica se o comando digitado é ad_morador e se ele é um prefixo
+    # Usa a função check_prefix
+    la		$a0, cmd_ad_morador	    # 
+    addi	$a1, $s0, 0			    # $a1 = $s0 + 0
+    jal		check_prefix		    # jump to check_prefix and save position to $ra
     beq		$v0, $zero, ad_morador	# if $v0 == $zero then goto ad_morador
 
-    # Comando rm_auto
-    la		$a0, cmd_rm_morador	# 
-    addi	$a1, $s0, 0			# $a1 = $s0 + 0
-    jal		check_prefix		# jump to check_prefix and save position to $ra
+    # Verifica se o comando digitado é rm_morador e se ele é um prefixo
+    # Usa a função check_prefix
+    la		$a0, cmd_rm_morador	    # 
+    addi	$a1, $s0, 0			    # $a1 = $s0 + 0
+    jal		check_prefix		    # jump to check_prefix and save position to $ra
     beq		$v0, $zero, rm_morador	# if $v0 == $zero then goto rm_morador
 
-    # Comando ad_auto
+    # Verifica se o comando digitado é ad_auto e se ele é um prefixo
+    # Usa a função check_prefix
     la		$a0, cmd_ad_auto		# 
-    addi	$a1, $s0, 0			# $a1 = $s0 + 0
-    jal		check_prefix				# jump to check_prefix and save position to $ra
+    addi	$a1, $s0, 0			    # $a1 = $s0 + 0
+    jal		check_prefix			# jump to check_prefix and save position to $ra
     beq		$v0, $zero, ad_auto	# if $v0 == $zero then goto ad_auto
 
-    # Comando rm_auto
+    # Verifica se o comando digitado é rm_auto e se ele é um prefixo
+    # Usa a função check_prefix
     la		$a0, cmd_rm_auto		# 
-    addi	$a1, $s0, 0			# $a1 = $s0 + 0
-    jal		check_prefix				# jump to check_prefix and save position to $ra
-    beq		$v0, $zero, rm_auto	# if $v0 == $zero then goto rm_auto
+    addi	$a1, $s0, 0			    # $a1 = $s0 + 0
+    jal		check_prefix			# jump to check_prefix and save position to $ra
+    beq		$v0, $zero, rm_auto	    # if $v0 == $zero then goto rm_auto
 
-    # Comando limpar_ap
+    # Verifica se o comando digitado é limpar_ap e se ele é um prefixo
+    # Usa a função check_prefix
     la		$a0, cmd_limpar_ap		# 
-    addi	$a1, $s0, 0			# $a1 = $s0 + 0
-    jal		check_prefix				# jump to check_prefix and save position to $ra
+    addi	$a1, $s0, 0			    # $a1 = $s0 + 0
+    jal		check_prefix			# jump to check_prefix and save position to $ra
     beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto limpar_ap
 
-    # Comando info_geral
+    # Verifica se o comando digitado é info_ap e se ele é um prefixo
+    # Usa a função check_prefix
+    la      $a0, cmd_info_ap    #
+    addi    $a1, $s0, 0         # $a1 = $s0 + 0
+    jal     check_prefix        # jump to check_prefix and save position to $ra
+    beq     $v0, $zero, info_ap # if $v0 == $zero then goto info_ap
+
+    # Verifica se o comando digitado é salvar
+    # Usa a função strcmp
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_salvar		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, salvar	# if $v0 == $zero then goto salvar
+
+    # Verifica se o comando digitado é info_geral
+    # Usa a função strcmp
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_info_geral		# 
     jal		strcmp				# jump to strcmp and save position to $ra
     beq		$v0, $zero, info_geral	# if $v0 == $zero then goto info_geral
 
-    # Command help
+    # Verifica se o comando digitado é help
+    # Usa a função strcmp
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_help		# 
     jal		strcmp				# jump to strcmp and save position to $ra
-    beq		$v0, $zero, help	# if $v0 == $zero then goto exit
+    beq		$v0, $zero, help	# if $v0 == $zero then goto help
 
-    # Command exit
+    # Verifica se o comando digitado é exit
+    # Usa a função strcmp
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     la		$a1, cmd_exit		# 
     jal		strcmp				# jump to strcmp and save position to $ra
     beq		$v0, $zero, exit	# if $v0 == $zero then goto exit
 
-    # If command not found suggest typing help
+    # Caso o comando não seja encontrado, sugere digitar help
     la		$t0, cmd_not_found		# 
     write_shell($t0)
 
+# Escreve o comando atual do shell no display
 write_current_shell_cmd:
+    # Carrega o usuário do shell
     la		$t0, shell_user		# 
     write_shell($t0)
+
+    # Escreve o comando atual no shell
     write_shell($s0)
 
     j		main				# jump to main
 
+# Limpa o comando atual
 clear_current_shell_cmd:
+    # Faz a limpa do comando (string digitada) do usuário, preenchendo com \0
+    # Usa a função fill_with_null_byte
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
     addi	$a1, $zero, 64			# $a1 = $zero + 64
     jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
@@ -802,19 +872,28 @@ strcat_finish:
     addi	$v0, $a0, 0			# $v0 = $a0 + 0
     jr		$ra					# jump to $ra
 
+# Função que remove o último caractere de uma string
+# Args:
+#   $a0 => Endereço da string que se deseja remover o último 
+#          caractere
+# 
 strrm1:
+    # Carrega uma cópia da entrada em temporários
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
     addi	$t1, $zero, 0			# $t1 = $zero + 0
     
 strrm1_loop_over_string:
+    # Faz o loop durante a string até seu fim
     lb		$t2, 0($t0)		# 
     beq		$t2, $zero, strrm1_remove_last	# if $t2 == $zero then goto strrm1_remove_last
     addi	$t0, $t0, 1			# $t0 = $t0 + 1
     j		strrm1_loop_over_string				# jump to strrm1_loop_over_string
     
 strrm1_remove_last:
+    # Faz a remoção de seu último caractere substituindo-o por \0
     subi	$t0, $t0, 1			# $t0 = $t0 - 1
     sb		$zero, 0($t0)		# 
+
     jr		$ra					# jump to $ra
 
 strlen:
@@ -931,6 +1010,8 @@ finish_strcpy:
     jr		$ra					# jump para o endereço presente em $ra
 
 # Verifica se o apartamento já está cadastrado no sistema
+# Args:
+#   $a0 => 
 search_if_apt_exists:
     addi	$t0, $a1, 0			# $t0 = $a1 + 0
     addi	$v1, $zero, 0			# $v1 = $zero + 0
