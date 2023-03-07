@@ -1,8 +1,8 @@
 .data
     shell_user: .asciiz "\nHJJS-shell>> " # mostra a sigla 'HJJS-shell>>' no simulador
-    nl: .word 10 # função que vai para uma nova linha (nl = new line)
-    bs: .word 8 # função que dá um backspace (bs)
-    ff: .word 12 # verifica valor na tabela asciiz
+    nl: .word 10 # representação para uma nova linha (nl = new line)
+    bs: .word 8 # representação de um backspace (bs)
+    ff: .word 12 # ff, na tabela ASCII, significa "Form Feed", que é um comando de impressão que faz com que a impressora avançe até o início da próxima página. 
     sep_args: .asciiz "-" # o separador '-' entre um argumento e outro
 
     receiver_ready: .word 0xffff0000 # o recebedor está pronto para ser usado
