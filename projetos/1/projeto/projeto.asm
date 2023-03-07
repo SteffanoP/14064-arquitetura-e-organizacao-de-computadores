@@ -20,7 +20,7 @@
     cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n"
     cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
     cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
-
+    
     # rm_morador data
     cmd_rm_morador: .asciiz "rm_morador"
     cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n"
@@ -46,6 +46,19 @@
     # limpar_ap data
     cmd_limpar_ap: .asciiz "limpar_ap"
     cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
+
+    # info_ap data
+    cmd_info_ap: .asciiz "info_ap"
+    cmd_info_ap_error_format: .asciiz "\nFalha, apartamento inválido. O info_ap não foi escrito de maneira correta. Verifique se o comando está no formato info_ap-<option1>.\n"
+    cmd_info_ap_apt_is_empty: "\nEste apartamento encontra-se vazio. Não é possível obter informações do apartamento solicitado.\n"
+    cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
+    cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>"
+    cmd_info_ap_message_ap: .asciiz "\nAP: "
+    cmd_info_ap_message_moradores: .asciiz "\nMoradores: \n"
+    cmd_info_ap_message_moradores_linha: .asciiz "\n"
+    cmd_info_ap_message_carro: .asciiz "\nCarro \nModelo: \n"
+    cmd_info_ap_message_moto: .asciiz "\nMoto \nModelo: \n"
+    cmd_info_ap_message_cor: .asciiz "\nCor: \n"
 
     # salvar
     cmd_salvar: .asciiz "salvar"
@@ -179,6 +192,12 @@ process_command:
     addi	$a1, $s0, 0			# $a1 = $s0 + 0
     jal		check_prefix				# jump to check_prefix and save position to $ra
     beq		$v0, $zero, limpar_ap	# if $v0 == $zero then goto limpar_ap
+
+    # Comando info_ap
+    la      $a0, cmd_info_ap
+    addi    $a1, $s0, 0
+    jal     check_prefix
+    beq     $v0, $zero, info_ap
 
     # Comando salvar
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -700,6 +719,145 @@ limpar_ap:
     write_shell($t3)
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
+
+# Função que mostra a informação do apartamento
+info_ap:
+    # Pula e Armazena a entrada para info_ap
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    jal		jump_prefix				# jump to jump_prefix and save position to $ra
+    addi	$t6, $v0, 0			# $t0 = $v0 + 0
+    addi	$s7, $s2, 0			# $t0 = $v0 + 0
+
+    # Verifica o formato X0Z do número do apartamento
+    lb		$t0, 1($v0)		# Carrega um char na posição onde deveria estar o separador de X e Z
+    lb		$t1, sep_apt_number		# Carrega o separador do andar (X) e apartamentos (Z), que é o '0'
+    bne		$t0, $t1, info_ap_error_format	# se $t0 != $t1 vá para info_ap_error_format
+    
+    # Verifica se o andar é válido ([0,9])
+    lb		$t0, 0($v0)		# Carrega um char na posição onde deveria ser o andar
+    subi	$t0, $t0, 48			# $t0 = $t0 - 48 => Converter de char para decimal
+    slti	$t0, $t0, 10			# $t0 = ($t0 < 10) ? 1 : 0 => Verifica se é menor que 10
+    beq		$t0, $zero, info_ap_error_invalid_floor	# se $t0 == $zero vá para info_ap_error_invalid_floor
+
+    # Check format -<option1>  OBS: Não possui um limite para os apartamentos [1:4]. Verificar como fazer.
+    lb		$t0, 3($v0)		# carrega o endereço 3 de v0 em t0 byte por byte
+    lb		$t1, sep_args	# carrega a função sep_args em t1 byte por byte
+    beq		$t0, $t1, info_ap_error_format_2 # se t1 == t0, vá para info_ap_error_format_2
+
+    # Verifica se o apartamento está cadastrado no condomínio
+    addi    $a0, $v0, 0                         # a0 = v0 + 0
+    addi    $a1, $s2, 0                         # a1 = s2 + 0
+    jal     search_if_apt_exists                # faz um jal para verificar se o apartamento existe e retorna endereço do bloco do ap em $v0
+    beq     $v0, $zero, info_ap_apt_is_empty    # se v0 == zero, vá para info_ap_apt_is_empty
+
+escrever_moradores:
+     # Pegando as informações de um apartamento específico e imprimindo no shell 
+    la      $t0, cmd_info_ap_message_ap
+    write_shell($t0)
+    la      $a0, 0($v0) #
+    write_shell($t0)
+    la      $v0, 1($v0)
+    write_shell($t0)
+
+    la      $t0, cmd_info_ap_message_moradores
+    write_shell($t0)
+    # Moradores {
+    la      $t0, 7($v0)     # primeiro morador (tem que ter pelo menos um morador no apartamento)
+    write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+
+    
+    # morador 2 (se existir)
+    la      $t0, 29($v0)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+
+    # morador 3 (se existir)
+    la      $t0, 51($v0)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+
+    # morador 4 (se existir)
+    la      $t0, 73($v0)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
+    la		$t0, nl		# 
+    write_shell($t0) # Print of \n
+
+    # morador 5 (se existir)
+    la      $t0, 95($v0)    # verifica se existe um segundo morador
+    beq     $t0, $zero, jump_to_auto
+    write_shell($t0)
+    j       jump_to_auto
+     # }
+
+
+jump_to_auto:
+    lb		$t1, cmd_ad_auto_type_carro		# 
+    lb		$t2, 117($v0)		# 
+    beq		$t1, $t2, imprime_carro	# if $t1 == $t2 then goto imprime_carro
+    lb      $t1, cmd_ad_auto_type_moto
+    beq     $t1, $t2, imprime_moto
+    j       clear_current_shell_cmd
+
+imprime_carro:
+    la      $t0, cmd_info_ap_message_carro
+    write_shell($t0)
+    la      $t0, 118($v0)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 139($v0)
+    write_shell($t0)
+    j       clear_current_shell_cmd
+
+imprime_moto:
+    la      $t0, cmd_info_ap_message_moto
+    write_shell($t0)
+    la      $t0, 118($v0)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 139($v0)
+    write_shell($t0)
+    
+    lb      $t0, 155($v0)
+    bne     $t0, $zero, imprime_moto_2
+    j       clear_current_shell_cmd
+
+imprime_moto_2:
+    la      $t0, cmd_info_ap_message_moto
+    write_shell($t0)
+    la      $t0, 156($v0)
+    write_shell($t0)
+    la      $t0, cmd_info_ap_message_cor
+    write_shell($t0)
+    la      $t0, 177($v0)
+    write_shell($t0)
+    j       clear_current_shell_cmd
+
+info_ap_apt_is_empty:
+    print_error(cmd_info_ap_apt_is_empty)
+    j       clear_current_shell_cmd         # jump to write_current_shell_cmd #mudar para clear_current_shell
+
+info_ap_error_format:
+    print_error(cmd_info_ap_error_format)
+    j       clear_current_shell_cmd         # jump to write_current_shell_cmd
+
+info_ap_error_format_2:
+    print_error(cmd_info_ap_error_format_2)
+    j       clear_current_shell_cmd
+
+info_ap_error_invalid_floor:
+    print_error(cmd_info_ap_error_invalid_floor)
+    j		clear_current_shell_cmd				# jump to write_current_shell_cmd
+
+
 info_geral:
     
     la		$t0, cmd_info_geral_message_nao_vazios		# 
@@ -1054,7 +1212,7 @@ loop_over_strings:
     j		loop_over_strings	# jump to loop_over_strings
     
 compare_greater:
-    addi $v0, $v0, 1
+    addi    $v0, $v0, 1
     slt		$t3, $t3, $t4		# $t3 = ($t3 < $t4) ? 1 : 0
     beq		$t3, $zero, finish_strcmp	# if $t3 == $zero then goto finish_strcmp
     subi	$v0, $v0, 2			# $v0 = $v0 - 2
