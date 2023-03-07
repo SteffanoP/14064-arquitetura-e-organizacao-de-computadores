@@ -1222,8 +1222,8 @@ help:
     j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 exit:
-    addi	$v0, $0, 10		# System call 10 - Exit
-    syscall					# execute
+    addi	$v0, $0, 10		# System call 10 - sai do programa
+    syscall					# executa
 
 # Função que seta a posição do final da lista para checagem 
 check_linked_list_last_position:
