@@ -1,85 +1,85 @@
 .data
-    shell_user: .asciiz "\nHJJS-shell>> "
-    nl: .word 10
-    bs: .word 8
-    ff: .word 12
-    sep_args: .asciiz "-"
+    shell_user: .asciiz "\nHJJS-shell>> " # mostra a sigla 'HJJS-shell>>' no simulador
+    nl: .word 10 # função que vai para uma nova linha (nl = new line)
+    bs: .word 8 # função que dá um backspace (bs)
+    ff: .word 12 # verifica valor na tabela asciiz
+    sep_args: .asciiz "-" # o separador '-' entre um argumento e outro
 
-    receiver_ready: .word 0xffff0000
-    receiver_data: .word 0xffff0004
-    transmitter_ready: .word 0xffff0008
-    transmitter_data: .word 0xffff000c
+    receiver_ready: .word 0xffff0000 # o recebedor está pronto para ser usado
+    receiver_data: .word 0xffff0004 # o recebedor está pronto para receber dados que o usuário irá informar
+    transmitter_ready: .word 0xffff0008 # o simulador está pronto para para transmitir dados
+    transmitter_data: .word 0xffff000c # o simulador transmite os dados para o usuário
 
     # ad_morador data
-    cmd_ad_morador: .asciiz "ad_morador"
-    cmd_ad_morador_sucessfull_message: .asciiz "Morador cadastrado com sucesso!"
-    cmd_ad_morador_error_format_1: .asciiz "\nad_morador não está formatado corretamente, verifique se você especificou a <option1>-<option2> corretamente.\n"
-    cmd_ad_morador_error_format_2: .asciiz "\nValor de apartamento inválido, certifique que o valor está no padrão X0Z, tal que X é o andar e Z é o número do apartamento\n"
-    sep_apt_number: .asciiz "0"
-    cmd_ad_morador_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
-    cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n"
-    cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
-    cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n"
+    cmd_ad_morador: .asciiz "ad_morador" # comando para adicionar um morador a um apartamento
+    cmd_ad_morador_sucessfull_message: .asciiz "Morador cadastrado com sucesso!" # comando para mensagem de sucesso para cadastro de morador a um apartamento
+    cmd_ad_morador_error_format_1: .asciiz "\nad_morador não está formatado corretamente, verifique se você especificou a <option1>-<option2> corretamente.\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro do formato <option1>-<option2>
+    cmd_ad_morador_error_format_2: .asciiz "\nValor de apartamento inválido, certifique que o valor está no padrão X0Z, tal que X é o andar e Z é o número do apartamento\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro de apartamento inválido
+    sep_apt_number: .asciiz "0" # label que separa o andar de um apartamento com um '0' no meio, padrão X0Z
+    cmd_ad_morador_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro de andar inválido
+    cmd_ad_morador_error_invalid_apartament: .asciiz "\nO apartamento possui um valor inválido. Por favor verifique novamente.\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro de apartamento inválido
+    cmd_ad_morador_error_invalid_name_size: .asciiz "\nO nome do morador excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro de tamanho de nome inválido
+    cmd_ad_morador_error_apt_is_full: .asciiz "\nO apartamento informado já está em sua capacidade máxima. Não foi possível concluir sua transação\n" # comando para mensagem de erro ao cadastrar um morador a um apartamento, erro de tentar ultrapassar o tamanho máximo de moradores
     
     # rm_morador data
-    cmd_rm_morador: .asciiz "rm_morador"
-    cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n"
-    cmd_rm_morador_error_not_found: .asciiz "\nO Morador não foi encontrado nesse apartamento.\n"
+    cmd_rm_morador: .asciiz "rm_morador" # comando para remover um morador de um apartamento
+    cmd_rm_morador_successfull_message: .asciiz "\nMorador removido com sucesso do apartamento.\n" # comando para mensagem de sucesso para remoção de um morador de um apartamento
+    cmd_rm_morador_error_not_found: .asciiz "\nO Morador não foi encontrado nesse apartamento.\n" # comando para mensagem de erro para remoção de um morador de um apartamento, morador não foi encontrado no apartamento
 
     # ad_auto data
-    cmd_ad_auto: .asciiz "ad_auto"
-    cmd_ad_auto_type_moto: .asciiz "m"
-    cmd_ad_auto_type_carro: .asciiz "c"
-    cmd_ad_auto_sucessfull_message: .asciiz "\nAutomóvel Cadastrado com sucesso!"
-    cmd_ad_auto_error_format_1: .asciiz "\nad_auto não está formatado corretamente, verifique se você especificou a <option1>-<option2>-<option3> corretamente.\n"
-    cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n"
-    cmd_ad_auto_error_invalid_modelo_size: .asciiz "\nO nome do modelo excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n"
-    cmd_ad_auto_error_invalid_cor_size: .asciiz "\nO nome da cor excede o tamanho de 14 caracteres. Por favor tente novamente com um nome menor.\n"
-    cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n"
-    cmd_ad_auto_error_not_enough_size: .asciiz "\nVocê não tem mais espaço disponível para o seu automóvel nesse apartamento!\n"
+    cmd_ad_auto: .asciiz "ad_auto" # comando para adicionar um automóvel a um apartamento
+    cmd_ad_auto_type_moto: .asciiz "m" # comando para adicionar o tipo de veículo MOTO
+    cmd_ad_auto_type_carro: .asciiz "c" # comando para adicionar o tipo de veículo CARRO
+    cmd_ad_auto_sucessfull_message: .asciiz "\nAutomóvel Cadastrado com sucesso!" # comando para mensagem de sucesso para remoção de um morador de um apartamento
+    cmd_ad_auto_error_format_1: .asciiz "\nad_auto não está formatado corretamente, verifique se você especificou a <option1>-<option2>-<option3> corretamente.\n" # comando para mensagem de erro, erro na sintaxe <option1>-<option2>-<option3>
+    cmd_ad_auto_error_invalid_type_auto: .asciiz "\nO tipo informado para o automóvel é inválido, por favor tente novamente com um tipo válido.\n" # comando para mensagem de erro, erro de tipo de automóvel inválido
+    cmd_ad_auto_error_invalid_modelo_size: .asciiz "\nO nome do modelo excede o tamanho de 20 caracteres. Por favor tente novamente com um nome menor.\n" # comando para mensagem de erro, erro por tentar ultrapassar o tamanho do nome do modelo de um veículo
+    cmd_ad_auto_error_invalid_cor_size: .asciiz "\nO nome da cor excede o tamanho de 14 caracteres. Por favor tente novamente com um nome menor.\n" # comando para mensagem de erro, erro por tentar ultrapassar o tamanho do nome da cor de um veículo
+    cmd_ad_auto_error_apt_not_found: .asciiz "\nO apartamento solicitado não está cadastrado no sistema e não será possível continuar a transação.\nTente cadastrar o seu apartamento com o comando ad_morador.\n" # comando para mensagem de erro, erro por não encontrar o apartamento solicitado
+    cmd_ad_auto_error_not_enough_size: .asciiz "\nVocê não tem mais espaço disponível para o seu automóvel nesse apartamento!\n" # comando para mensagem de erro, erro por não ter mais espaço para um veículo a mais no apartamento
 
     # rm_auto data
-    cmd_rm_auto: .asciiz "rm_auto"
-    cmd_rm_auto_successfull_message: .asciiz "\nAutomóvel removido com sucesso!\n"
-    cmd_rm_auto_error_auto_not_found: .asciiz "\nNão foi possível encontrar o veículo informado para essa apartamento.\nTente novamente com o nome exato do veículo.\n"
+    cmd_rm_auto: .asciiz "rm_auto" # comando para remover um automóvel de um apartamento
+    cmd_rm_auto_successfull_message: .asciiz "\nAutomóvel removido com sucesso!\n" # comando para mensagem de sucesso para remoção de veículo de um apartamento
+    cmd_rm_auto_error_auto_not_found: .asciiz "\nNão foi possível encontrar o veículo informado para essa apartamento.\nTente novamente com o nome exato do veículo.\n" # comando para mensagem de erro por não encontrar um veículo vinculado a um apartamento
 
     # limpar_ap data
-    cmd_limpar_ap: .asciiz "limpar_ap"
-    cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n"
+    cmd_limpar_ap: .asciiz "limpar_ap" # comando para limpar um apartamento
+    cmd_limpar_ap_successfull_message: .asciiz "\nO apartamento foi limpado com sucesso!\n" # comando para mensagem de sucesso por limpar um apartamento
 
     # info_ap data
-    cmd_info_ap: .asciiz "info_ap"
-    cmd_info_ap_error_format: .asciiz "\nFalha, apartamento inválido. O info_ap não foi escrito de maneira correta. Verifique se o comando está no formato info_ap-<option1>.\n"
-    cmd_info_ap_apt_is_empty: "\nEste apartamento encontra-se vazio. Não é possível obter informações do apartamento solicitado.\n"
-    cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n"
-    cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>"
-    cmd_info_ap_message_ap: .asciiz "\nAP: "
-    cmd_info_ap_message_moradores: .asciiz "\nMoradores: \n"
-    cmd_info_ap_message_moradores_linha: .asciiz "\n"
-    cmd_info_ap_message_carro: .asciiz "\nCarro \nModelo: \n"
-    cmd_info_ap_message_moto: .asciiz "\nMoto \nModelo: \n"
-    cmd_info_ap_message_cor: .asciiz "\nCor: \n"
+    cmd_info_ap: .asciiz "info_ap" # comando para obter informações sobre um apartamento informado
+    cmd_info_ap_error_format: .asciiz "\nFalha, apartamento inválido. O info_ap não foi escrito de maneira correta. Verifique se o comando está no formato info_ap-<option1>.\n" # comando para mensagem de erro de sintaxe, o apartamento não foi escrito de maneira corretamente
+    cmd_info_ap_apt_is_empty: "\nEste apartamento encontra-se vazio. Não é possível obter informações do apartamento solicitado.\n" # comando para mensagem de erro, o apartamento informado encontra-se vazio
+    cmd_info_ap_error_invalid_floor: .asciiz "\nO andar possui um valor inválido. Por favor verifique novamente.\n" # comando para mensagem de erro, o andar possui um valor inválido
+    cmd_info_ap_error_format_2: .asciiz "\nnão está formatado corretamente, verifique se você especificou a <option1>" # comando para mensagem de erro, erro de sintaxe com a -<option1>
+    cmd_info_ap_message_ap: .asciiz "\nAP: " # comando para mensagem que informa qual apartamento foi solicitado as informações
+    cmd_info_ap_message_moradores: .asciiz "\nMoradores: \n" # comando para mensagem que lista os moradores de um apartamento
+    cmd_info_ap_message_moradores_linha: .asciiz "\n" # comando para quebrar a linha entre um morador e outro, para melhor vizualização dos moradores
+    cmd_info_ap_message_carro: .asciiz "\nCarro \nModelo: \n" # comando para mensagem que lista o tipo de veículo CARRO e seu modelo
+    cmd_info_ap_message_moto: .asciiz "\nMoto \nModelo: \n" # comando para mensagem que lista o tipo de veículo MOTO e seu modelo
+    cmd_info_ap_message_cor: .asciiz "\nCor: \n" # comando para mensagem que informa a cor do veículo vinculado a um apartamento
 
     # salvar
-    cmd_salvar: .asciiz "salvar"
-    cmd_salvar_colunas: .asciiz "Apartamento, Morador 1, Morador 2, Morador 3, Morador 4, Morador 5, Veiculo Tipo 1, Modelo 1, Cor 1, Veiculo Tipo 2, Modelo 2, Cor 2"
-    cmd_salvar_sucessfull_message: .asciiz "Dados salvos com sucesso."
-    cmd_salvar_file: .asciiz "projeto_teste.csv" # coloque aqui o diretório do arquivo
+    cmd_salvar: .asciiz "salvar" # comando para salvar o documento
+    cmd_salvar_colunas: .asciiz "Apartamento, Morador 1, Morador 2, Morador 3, Morador 4, Morador 5, Veiculo Tipo 1, Modelo 1, Cor 1, Veiculo Tipo 2, Modelo 2, Cor 2" # comando para salvar as colunas do arquivo
+    cmd_salvar_sucessfull_message: .asciiz "Dados salvos com sucesso." # comando de mensagem de sucesso informando que os dados foram salvos no arquivo
+    cmd_salvar_file: .asciiz "projeto_teste.csv" # coloque aqui o diretório do arquivo      # comando para informar o diretório do arquivo
     .align 2 # dados do arquivo
-    cmd_salvar_data: .space 200
+    cmd_salvar_data: .space 200 # comando para salvar um espaço para armazenar dados no arquivo
 
     # info_geral data
-    cmd_info_geral: .asciiz "info_geral"
-    cmd_info_geral_message_nao_vazios: .asciiz "\nNão vazios:\t"
-    cmd_info_geral_message_percentage_1: .asciiz " ("
-    cmd_info_geral_message_percentage_2: .asciiz "%).\n"
-    cmd_info_geral_message_vazios: .asciiz "Vazios:\t\t"
+    cmd_info_geral: .asciiz "info_geral" # comando para obter uma informação geral do prédio inteiro
+    cmd_info_geral_message_nao_vazios: .asciiz "\nNão vazios:\t" # comando de mensagem que informa quantos apartamentos não estão vazios
+    cmd_info_geral_message_percentage_1: .asciiz " (" # primeiro parêntese para determinar o percentual de moradores
+    cmd_info_geral_message_percentage_2: .asciiz "%).\n" # percentual de moradores do prédio
+    cmd_info_geral_message_vazios: .asciiz "Vazios:\t\t" # comando de mensagem que determina quanros apartamentos estão vazios
 
-    cmd_help: .asciiz "help"
-    std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n"
+    cmd_help: .asciiz "help" # comando para obter uma ajuda sobre o sistema
+    std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n" # informações que existem ao solicitar o comando 'help'
 
-    cmd_exit: .asciiz "exit"
-    cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available."
+    cmd_exit: .asciiz "exit" # comando para sair do programa
+    cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available." # comando que informa que o comando escrito não consta no sistema, e sugere usar o comando 'help' para obter ajuda
 .text
 
 .macro write_shell (%string_address)
