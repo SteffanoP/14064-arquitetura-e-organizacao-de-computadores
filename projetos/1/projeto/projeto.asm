@@ -1304,17 +1304,17 @@ strrm1_remove_last:
     jr		$ra					# jump to $ra
 
 strlen:
-    addi	$v0, $a0, 0			# $t0 = $a0 + 0
+    addi	$v0, $a0, 0			# v0 = $a0 + 0
 
 strlen_loop_over_str:
-    lb		$t2, 0($v0)		# 
-    beq		$t2, $zero, strlen_finish	# if $t2 == $t1 then goto strlen_finish
+    lb		$t2, 0($v0)		# carrega um byte (8 bits) da memória no endereço 0 do reg $v0, e armazena no reg $t2.
+    beq		$t2, $zero, strlen_finish	# se $t2 == $t1 então vá para strlen_finish
     addi	$v0, $v0, 1			# $t0 = $t0 + 1
-    j strlen_loop_over_str
+    j strlen_loop_over_str      # jump para strlen_loop_over_str
 
 strlen_finish:
     sub		$v0, $v0, $a0		# $v0 = $v0 - $a0
-    jr		$ra					# jump to $ra
+    jr		$ra					# jump para $ra
 
 strncmp:
     addi	$t0, $a0, 0			# $t0 = $a0 + 0
