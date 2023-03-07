@@ -78,6 +78,9 @@
     cmd_help: .asciiz "help" # comando para obter uma ajuda sobre o sistema
     std_help: .asciiz "\n\nThese are common commands used in various situations:\n\nad_morador-<option1>-<option2>\tEste comando adiciona um morador a um apartamento\nespecificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nrm_morador-<option1>-<option2>\tEste comando remove um morador de um apartamento\n especificado pela <option1>. O nome do morador é especificado pela <option2>.\n\nad_auto-<option1>-<option2>-<option3>-<option4>\tEste comando adiciona um automóvel\n a um apartamento especificado pela <option1>. O tipo de automóvel é especificado pela \n<option2>.O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nrm_auto-<option1>-<option2>-<option3>-<option4>\tEste comando remove um automóvel\nde um apartamento especificado pela <option1> .O tipo de automóvel é especificado pela\n<option2>. O modelo do automóvel é especificado pela <option3> e a sua cor pela <option4>.\n\nlimpar_ap-<option1>\tEste comando exclui todos os moradores e automóveis cadastrados\npara o apartamento especificado pela <option1>.\n\ninfo_ap-<option1>\tEste comando imprime na tela todas as informações cadastradas\nreferente a um apartamento especificado pela <option1>.\n\ninfo_geral\tDeve apresentar o panorama geral de apartamentos vazios e não vazios.\n\nsalvar\tDeve salvar todas as informações registradas em um arquivo externo.\n\nrecarregar\tRecarrega as informações salvas no arquivo externo na execução atual\ndo programa.\n\nformatar\tApaga todas as informações da execução atual do programa, deixando todos\nos apartamentos vazios.\n" # informações que existem ao solicitar o comando 'help'
 
+    # formatar data
+    cmd_formatar: .asciiz "formatar" # Comando para apagar todos os dados digitados
+
     cmd_exit: .asciiz "exit" # comando para sair do programa
     cmd_not_found: .asciiz "\nCommand Not Found, type \"help\" to see all commands available." # comando que informa que o comando escrito não consta no sistema, e sugere usar o comando 'help' para obter ajuda
 .text
@@ -258,6 +261,15 @@ process_command:
     jal		strcmp				# pular para strcmp e salvar posição em $ra
     beq		$v0, $zero, info_geral	# se $v0 == $zero então vá para info_geral
 
+    # Comando formatar
+    # Verifica se o comando digitado é formatar
+    # Usa a função strcmp
+    addi	$a0, $s0, 0			# $a0 = $s0 + 0
+    la		$a1, cmd_formatar		# 
+    jal		strcmp				# jump to strcmp and save position to $ra
+    beq		$v0, $zero, formatar	# if $v0 == $zero then goto info_geral
+
+    # Command help
     # Verifica se o comando digitado é help
     # Usa a função strcmp
     addi	$a0, $s0, 0			# $a0 = $s0 + 0
@@ -1315,6 +1327,31 @@ write_file:
     la		$t0, cmd_salvar_sucessfull_message		# carrega o endereço da mensagem de sucesso
     write_shell($t0) # imprime a mensagem de sucesso
     j		clear_current_shell_cmd				# realiza o jump para 'clear_current_shell_cmd'
+
+# Função que formata todos os dados armazenado em memória
+formatar:
+    # Verifica se a memória da ll tem alguma coisa
+    beq		$s2, $zero, formatar_finish	# if $s2 == $zero then goto formatar_finish
+
+    # Salva o endereço na Stack para usar na criação de um novo apartamento
+    addi	$sp, $sp, -4			# $sp = $sp + -4
+    sw		$s2, 0($sp)		# 
+
+    # Copia o valor de $s2 para $s3
+    addi	$s3, $s2, 0			# $s3 = $s2 + 0
+
+    # Carrega o endereço do próximo apartamento em $s2
+    lw		$s2, 196($s2)		# 
+
+    # Limpa todo o bloco com null bytes
+    addi	$a0, $s3, 0			# $a0 = $s3 + 0
+    addi	$a1, $zero, 200			# $a1 = $zero + 200
+    jal		fill_with_null_byte				# jump to fill_with_null_byte and save position to $ra
+
+    j		formatar				# jump to formatar
+    
+formatar_finish:
+    j		clear_current_shell_cmd				# jump to clear_current_shell_cmd
 
 # Função que mostra os comandos que podem ser utilizados pelo usuário do programa a partir da entrada "help".
 help:
