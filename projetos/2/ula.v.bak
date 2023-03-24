@@ -1,3 +1,0 @@
-module ula(In1, In2, OP, result, Zero_flag)
-
-endmodule
