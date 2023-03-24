@@ -24,5 +24,5 @@ module mips(in, out);
 
 	// INSTRUCTION MEMORY MODULE
 	wire [31:0] instruction;
-	i_mem current_instruction(nexPC, instruction);
+	i_mem current_instruction(nextPC, instruction);
 endmodule
