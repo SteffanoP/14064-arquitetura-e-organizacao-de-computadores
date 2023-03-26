@@ -1,19 +1,14 @@
-module mips(in, out);
-	input wire in;
-	output wire out;
-	
-	assign out = !in;
+module mips(clock, reset, pc, ula_result, data_mem);
+	input wire clock, reset;
+	output wire [31:0] pc, ula_result, data_mem;
 
 	// ULA MODULE
 	reg [31:0] In1, In2;
 	reg [3:0] OP;
-	wire [31:0] result;
 	wire Zero_flag;
-	ula mips_ula(In1, In2, OP, result);
+	ula mips_ula(In1, In2, OP, ula_result);
 	
 	// PC MODULE
-	wire clock;
-	wire [31:0] PC; // contém o endereço atual
 	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
 	PC pc_check(PC, nextPC, clock);
 
