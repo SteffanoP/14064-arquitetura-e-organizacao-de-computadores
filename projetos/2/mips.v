@@ -1,3 +1,10 @@
+`include "counter.v"
+`include "i_mem.v"
+`include "mux_src.v"
+`include "pc.v"
+`include "regfile.v"
+`include "ula.v"
+
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
 	output wire [31:0] pc, ula_result, data_mem;
