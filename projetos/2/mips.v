@@ -27,8 +27,9 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	wire [31:0] instruction;
 	i_mem current_instruction(nextPC, instruction);
   
-  wire [31:0] sign_extend_to_mux;
-	sign_extend mips_sign_extend (instruction[15:0], sign_extend_to_mux);
+	//Sign extend from 16 to 32 bits
+	wire [31:0] sign_extend_to_mux;
+	sign_extend mips_sign_extend(instruction[15:0], sign_extend_to_mux);
 
 	wire branch; //Saída do controle em caso de branching
 	wire branch_sel; //Atribuição em caso de branching do PC para outra instrução
