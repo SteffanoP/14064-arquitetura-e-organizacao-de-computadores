@@ -4,6 +4,7 @@
 `include "pc.v"
 `include "regfile.v"
 `include "ula.v"
+`include "sign_extend.v"
 
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
@@ -26,4 +27,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	// INSTRUCTION MEMORY MODULE
 	wire [31:0] instruction;
 	i_mem current_instruction(nextPC, instruction);
+
+	wire [31:0] sign_extend_to_mux;
+	sign_extend mips_sign_extend (instruction[15:0], sign_extend_to_mux);
 endmodule
