@@ -21,38 +21,38 @@ module regfile(ReadAddr1, ReadAddr2, ReadData1, ReadData2, Clock, WriteAddr, Wri
 
 		// Condição de reset do Registrador 
 		if(Reset) begin
-			Reg[0] <= 16'b0;  
-			Reg[1] <= 16'b0;  
-			Reg[2] <= 16'b0;  
-			Reg[3] <= 16'b0;  
-			Reg[4] <= 16'b0;  
-			Reg[5] <= 16'b0;  
-			Reg[6] <= 16'b0;  
-			Reg[7] <= 16'b0;
-			Reg[8] <= 16'b0;  
-			Reg[9] <= 16'b0;  
-			Reg[10] <= 16'b0;  
-			Reg[11] <= 16'b0;  
-			Reg[12] <= 16'b0;  
-			Reg[13] <= 16'b0;  
-			Reg[14] <= 16'b0;  
-			Reg[15] <= 16'b0;
-			Reg[16] <= 16'b0;  
-			Reg[17] <= 16'b0;  
-			Reg[18] <= 16'b0;  
-			Reg[19] <= 16'b0;  
-			Reg[20] <= 16'b0;  
-			Reg[21] <= 16'b0;  
-			Reg[22] <= 16'b0;  
-			Reg[23] <= 16'b0;
-			Reg[24] <= 16'b0;  
-			Reg[25] <= 16'b0;  
-			Reg[26] <= 16'b0;  
-			Reg[27] <= 16'b0;  
-			Reg[28] <= 16'b0;  
-			Reg[29] <= 16'b0;  
-			Reg[30] <= 16'b0;  
-			Reg[31] <= 16'b0;
+			Reg[0] <= 32'b0;  
+			Reg[1] <= 32'b0;  
+			Reg[2] <= 32'b0;  
+			Reg[3] <= 32'b0;  
+			Reg[4] <= 32'b0;  
+			Reg[5] <= 32'b0;  
+			Reg[6] <= 32'b0;  
+			Reg[7] <= 32'b0;
+			Reg[8] <= 32'b0;  
+			Reg[9] <= 32'b0;  
+			Reg[10] <= 32'b0;  
+			Reg[11] <= 32'b0;  
+			Reg[12] <= 32'b0;  
+			Reg[13] <= 32'b0;  
+			Reg[14] <= 32'b0;  
+			Reg[15] <= 32'b0;
+			Reg[16] <= 32'b0;  
+			Reg[17] <= 32'b0;  
+			Reg[18] <= 32'b0;  
+			Reg[19] <= 32'b0;  
+			Reg[20] <= 32'b0;  
+			Reg[21] <= 32'b0;  
+			Reg[22] <= 32'b0;  
+			Reg[23] <= 32'b0;
+			Reg[24] <= 32'b0;  
+			Reg[25] <= 32'b0;  
+			Reg[26] <= 32'b0;  
+			Reg[27] <= 32'b0;  
+			Reg[28] <= 32'b0;  
+			Reg[29] <= 32'b0;  
+			Reg[30] <= 32'b0;  
+			Reg[31] <= 32'b0;
 		end	
 		// Caso não seja executado o reset
 		else begin
