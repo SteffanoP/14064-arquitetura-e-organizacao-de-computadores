@@ -13,36 +13,37 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	output wire [31:0] pc, ula_result, data_mem;
 
 	wire [1:0] ula_operation;
-	// ULA_CONTROL MODULE
+	// MÓDULO ULA_CONTROL
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
-	// ULA MODULE
+	// MÓDULO ULA
 	wire [31:0] In1, In2;
 	wire [3:0] OP;
 	wire ula_zero_flag;
 	ula mips_ula(In1, In2, OP, ula_result, ula_zero_flag);
 	
-	// PC MODULE
+	// MÓDULO PC
 	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
 	PC pc_check(pc, nextPC, clock);
 
 	wire [31:0] pc_increment; // Representará o resultado da soma do valor do PC
 	Counter pc_counter(nextPC, pc_increment); // Módulo para atualizar o valor do PC
 
-	// INSTRUCTION MEMORY MODULE
+	// MÓDULO INSTRUÇÃO DE MEMÓRIA
 	wire [31:0] instruction;
 	i_mem current_instruction(nextPC, instruction);
 
-	// FIELD SEPARATOR MUX (instruction)
-	wire RegDst;
-	wire [5:0] op_out;
-	wire [4:0] rs_out, rt_out, rd_out;
-	Field_separator mux_sep_instr(instruction, op_out, rs_out, rt_out, RegDst, rd_out);
+	// FIELD SEPARATOR MUX (instruction) PROVAVELMENTE NÃO É NECESSÁRIO
+	// wire [5:0] op_out;
+	// wire [4:0] rs_out, rt_out, rd_out;
+	// Field_separator mux_sep_instr(instruction, op_out, rs_out, rt_out, RegDst, rd_out);
 
-	// MUX (i_mem and regfile)
-	//Mux_ireg mux(instruction[20:16], instruction[15:11], RegDst, inst_selected);
+	// MUX (i_mem e regfile)
+	wire RegDst; // Vem da Control
+	Mux_ireg mux(instruction[20:16], instruction[15:11], RegDst, inst_selected);
 
-  
-	//Sign extend from 16 to 32 bits
+	// REGFILE MODULE HERE (recebe o output inst_selected acima no campo WriteAddr)
+
+	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
 	sign_extend mips_sign_extend(instruction[15:0], sign_extend_to_mux);
 
