@@ -16,8 +16,8 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	// ULA_CONTROL MODULE
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
 	// ULA MODULE
-	reg [31:0] In1, In2;
-	reg [3:0] OP;
+	wire [31:0] In1, In2;
+	wire [3:0] OP;
 	wire ula_zero_flag;
 	ula mips_ula(In1, In2, OP, ula_result, ula_zero_flag);
 	
