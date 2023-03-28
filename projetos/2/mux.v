@@ -1,3 +1,13 @@
+module mux_32 (in1, in2, sel, out);
+    // Declaração de entradas e saídas
+	input wire [31:0] in1, in2;
+	input wire sel;
+	output wire [31:0] out;
+
+    //Determinação do multiplexador
+	assign out = sel ? in1 : in2;
+endmodule
+
 module mux_src(ALUsrc, ReadData2, SignExtended32, ALUin2);
 	// Declaração das entradas e saídas
 	input ALUsrc;
