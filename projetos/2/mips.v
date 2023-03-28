@@ -1,3 +1,12 @@
+`include "counter.v"
+`include "i_mem.v"
+`include "mux_src.v"
+`include "pc.v"
+`include "regfile.v"
+`include "ula.v"
+`include "ula_control.v"
+`include "sign_extend.v"
+
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
 	output wire [31:0] pc, ula_result, data_mem;
@@ -13,14 +22,16 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	
 	// PC MODULE
 	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
-
-	// Clock current_clock(clock);
 	PC pc_check(pc, nextPC, clock);
 
-	wire [31:0] pc_increment;
-	Counter pc_counter(nextPC, pc_increment); //talvez setar o 4 dentro da função seja melhor...
+	// TODO: Implement pc_increment on MUX that will select the next PC
+	// wire [31:0] pc_increment; // Representará o resultado da soma do valor do PC
+	Counter pc_counter(nextPC, pc); // Módulo para atualizar o valor do PC
 
 	// INSTRUCTION MEMORY MODULE
 	wire [31:0] instruction;
 	i_mem current_instruction(nextPC, instruction);
+
+	wire [31:0] sign_extend_to_mux;
+	sign_extend mips_sign_extend (instruction[15:0], sign_extend_to_mux);
 endmodule
