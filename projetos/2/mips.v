@@ -17,8 +17,8 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	// ULA MODULE
 	wire [31:0] In1, In2;
 	wire [3:0] OP;
-	wire Zero_flag;
-	ula mips_ula(In1, In2, OP, ula_result);
+	wire ula_zero_flag;
+	ula mips_ula(In1, In2, OP, ula_result, ula_zero_flag);
 	
 	// PC MODULE
 	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
