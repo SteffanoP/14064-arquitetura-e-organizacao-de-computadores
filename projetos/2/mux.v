@@ -33,8 +33,6 @@ module mux_4(inst0, inst1, RegDst, imem_mux_to_write_register);
 	output reg [4:0] imem_mux_to_write_register;
 
 	// Determinação do multiplexador
-	always @ (inst0 or inst1 or RegDst) begin
-		imem_mux_to_write_register = (RegDst) ? inst0 : inst1;	
-	end
+	assign imem_mux_to_write_register = (RegDst) ? inst0 : inst1;
 
 endmodule
