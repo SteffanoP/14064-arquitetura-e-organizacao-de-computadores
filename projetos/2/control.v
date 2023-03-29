@@ -15,7 +15,7 @@ module control (
 
     always @(opcode) begin
         case (opcode)
-            6'b000000: begin //add
+            6'b000000: begin //sll, srl, sra, sllv, srlv, jr, add, sub, and, or, xor, nor, slt, sltu
                 RegDst = 1'b1;
                 Branch = 1'b0;
                 MemRead = 1'b0;
