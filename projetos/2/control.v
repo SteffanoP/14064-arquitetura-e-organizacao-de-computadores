@@ -25,7 +25,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b1;
             end
-            6'b000111: begin //addi
+            6'b001000: begin //addi
                 RegDst = 1'b0;
                 Branch = 1'b0;
                 MemRead = 1'b0;
