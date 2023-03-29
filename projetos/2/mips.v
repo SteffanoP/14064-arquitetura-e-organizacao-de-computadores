@@ -7,6 +7,7 @@
 `include "ula_control.v"
 `include "sign_extend.v"
 `include "utils.v"
+`include "d_mem.v"
 
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
