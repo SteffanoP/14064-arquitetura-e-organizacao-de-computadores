@@ -34,9 +34,9 @@ module mips(clock, reset, pc, ula_result, data_mem);
 
 	// MUX (i_mem e regfile)
 	wire RegDst; // Vem da Control
-	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, inst_selected);
+	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
 
-	// REGFILE MODULE (recebe o output inst_selected acima no campo WriteAddr)
+	// REGFILE MODULE (recebe o output imem_mux_to_write_register acima no campo WriteAddr)
 
 	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;

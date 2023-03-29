@@ -26,15 +26,15 @@ module mux_src(ALUsrc, ReadData2, SignExtended32, ALUin2);
 	end
 endmodule
 
-module mux_4(inst0, inst1, RegDst, inst_selected);
+module mux_4(inst0, inst1, RegDst, imem_mux_to_write_register);
 	// Declaração das entradas e saída
 	input [4:0] inst0, inst1;
 	input RegDst; // <= vem da Control
-	output reg [4:0] inst_selected;
+	output reg [4:0] imem_mux_to_write_register;
 
 	// Determinação do multiplexador
 	always @ (inst0 or inst1 or RegDst) begin
-		inst_selected = (RegDst) ? inst0 : inst1;	
+		imem_mux_to_write_register = (RegDst) ? inst0 : inst1;	
 	end
 
 endmodule
