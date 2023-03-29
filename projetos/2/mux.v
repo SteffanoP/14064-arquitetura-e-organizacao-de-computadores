@@ -30,7 +30,7 @@ module mux_4(inst0, inst1, RegDst, imem_mux_to_write_register);
 	// Declaração das entradas e saída
 	input [4:0] inst0, inst1;
 	input RegDst; // <= vem da Control
-	output reg [4:0] imem_mux_to_write_register;
+	output wire [4:0] imem_mux_to_write_register;
 
 	// Determinação do multiplexador
 	assign imem_mux_to_write_register = (RegDst) ? inst0 : inst1;
