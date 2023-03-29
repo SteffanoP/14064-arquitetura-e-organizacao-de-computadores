@@ -32,16 +32,11 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	wire [31:0] instruction;
 	i_mem current_instruction(nextPC, instruction);
 
-	// FIELD SEPARATOR MUX (instruction) PROVAVELMENTE NÃO É NECESSÁRIO
-	// wire [5:0] op_out;
-	// wire [4:0] rs_out, rt_out, rd_out;
-	// Field_separator mux_sep_instr(instruction, op_out, rs_out, rt_out, RegDst, rd_out);
-
 	// MUX (i_mem e regfile)
 	wire RegDst; // Vem da Control
-	Mux_ireg mux(instruction[20:16], instruction[15:11], RegDst, inst_selected);
+	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, inst_selected);
 
-	// REGFILE MODULE HERE (recebe o output inst_selected acima no campo WriteAddr)
+	// REGFILE MODULE (recebe o output inst_selected acima no campo WriteAddr)
 
 	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
