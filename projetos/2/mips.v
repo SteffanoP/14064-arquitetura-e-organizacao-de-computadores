@@ -37,9 +37,17 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	wire RegDst; // Vem da Control
 	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
 
-	// REGFILE MODULE (recebe o output imem_mux_to_write_register acima no campo WriteAddr)
+	// MÓDULO REGFILE
+	wire [31:0] ReadData1, ReadData2;
+	wire WriteData; // Vem do mux_memtoreg
+	wire RegWrite; // Vem da Control
+	regfile mips_regfile(instruction[25:21], instruction[20:16], ReadData1, ReadData2, clock, imem_mux_to_write_register, WriteData, RegWrite, reset);
 
-	//Sign extend de 16 para 32 bits
+	// MUX (regfile e ula)
+	wire ALUsrc; // Vem da Control
+	mux_src mips_mux_src(ALUsrc, ReadData2, sign_extend_to_mux, In2);
+
+	//Sign extend from 16 to 32 bits
 	wire [31:0] sign_extend_to_mux;
 	sign_extend mips_sign_extend(instruction[15:0], sign_extend_to_mux);
 
