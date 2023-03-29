@@ -3,6 +3,7 @@
 `include "mux.v"
 `include "pc.v"
 `include "regfile.v"
+`include "control.v"
 `include "ula.v"
 `include "ula_control.v"
 `include "sign_extend.v"
@@ -12,6 +13,20 @@
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
 	output wire [31:0] pc, ula_result, data_mem;
+
+	// CONTROL MODULE
+	wire RegDst, MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite;
+	control mips_control (
+		instruction[31:26],
+		RegDst,
+		branch,
+		MemRead,
+		MemtoReg,
+		ula_operation,
+		MemWrite,
+		ALUSrc,
+		RegWrite
+	);
 
 	wire [1:0] ula_operation;
 	// MÓDULO ULA_CONTROL
