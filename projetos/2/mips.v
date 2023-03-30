@@ -45,7 +45,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 
 	// MUX (regfile e ula)
 	wire ALUsrc; // Vem da Control
-	mux_src mips_mux_src(ALUsrc, ReadData2, sign_extend_to_mux, In2);
+	mux_32 regfile_mux(ReadData2, sign_extend_to_mux, ALUsrc, In2);
 
 	//Sign extend from 16 to 32 bits
 	wire [31:0] sign_extend_to_mux;
