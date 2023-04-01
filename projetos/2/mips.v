@@ -34,14 +34,13 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	i_mem current_instruction(nextPC, instruction);
 
 	// D_MEM MODULE
-	wire [31:0] readData;
 	wire memWrite; //vem do controle
 	wire memRead;  //vem do controle
 	d_mem mips_d_mem(ula_result, ReadData2, data_mem, memWrite, memRead);
 
 	wire memToReg; //vem do controle
 	wire WriteData;
-	mux_32 mux_32_d_mem(readData, ula_result, memToReg, WriteData);
+	mux_32 mux_32_d_mem(data_mem, ula_result, memToReg, WriteData);
 
 	// MUX (i_mem e regfile)
 	wire RegDst; // Vem da Control
