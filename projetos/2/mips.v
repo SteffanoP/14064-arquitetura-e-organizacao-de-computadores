@@ -37,7 +37,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	wire [31:0] readData;
 	wire memWrite; //vem do controle
 	wire memRead;  //vem do controle
-	d_mem mips_d_mem(ula_result, ReadData2, readData, memWrite, memRead);
+	d_mem mips_d_mem(ula_result, ReadData2, data_mem, memWrite, memRead);
 
 	wire memToReg; //vem do controle
 	wire WriteData;
