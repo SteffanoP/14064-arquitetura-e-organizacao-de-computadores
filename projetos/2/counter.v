@@ -1,4 +1,4 @@
-module Counter(nextPC, pc_increment);
+module Adder(nextPC, pc_increment);
 	// Declaração de entrada e saída
 	input [31:0] nextPC;
 	output [31:0] pc_increment;

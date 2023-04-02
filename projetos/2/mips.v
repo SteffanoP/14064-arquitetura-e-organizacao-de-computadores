@@ -27,7 +27,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	PC pc_check(pc, nextPC, clock);
 
 	wire [31:0] pc_increment; // Representará o resultado da soma do valor do PC
-	Counter pc_counter(nextPC, pc_increment); // Módulo para atualizar o valor do PC
+	Adder pc_counter(nextPC, pc_increment); // Módulo para atualizar o valor do PC
 
 	// MÓDULO INSTRUÇÃO DE MEMÓRIA
 	wire [31:0] instruction;
