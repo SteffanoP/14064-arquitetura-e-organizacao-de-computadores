@@ -15,6 +15,7 @@ module ula(In1, In2, OP, result, Zero_flag);
 			4'b0010: ula_result <= In1 + In2; //0010: ADD
 			4'b0110: ula_result <= In1 - In2; //0110: SUB
 			4'b0111: ula_result <= (In1 < In2) ? 32'd1 : 32'd0; //0111: SLT
+			4'b1011: ula_result <= {In2[15:0], 16'h0000}; //1011: LUI
 			4'b1100: ula_result <= ~ (In1 | In2); //1100: NOR
 			4'b1101: ula_result <= In1 ^ In2; //1101: XOR
 			4'b1110: ula_result <= In2 << In1; //1110: Shift left

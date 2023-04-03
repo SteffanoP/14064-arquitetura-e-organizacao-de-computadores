@@ -26,6 +26,7 @@ module ula_control(ula_operation, func, operation);
             3'b100: operation <= 4'b0000; //andi
             3'b101: operation <= 4'b0001; //ori
             3'b110: operation <= 4'b1101; //xori
+            3'b111: operation <= 4'b1011; //lui
         endcase 
     end
 
