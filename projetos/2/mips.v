@@ -32,10 +32,10 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	// MÓDULO ULA_CONTROL
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
 	// MÓDULO ULA
-	wire [31:0] In1, In2;
+	wire [31:0] In2;
 	wire [3:0] OP;
 	wire ula_zero_flag;
-	ula mips_ula(In1, In2, OP, ula_result, ula_zero_flag);
+	ula mips_ula(ReadData1, In2, OP, ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
 	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
