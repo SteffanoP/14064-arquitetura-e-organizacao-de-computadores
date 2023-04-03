@@ -19,7 +19,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	control mips_control (
 		instruction[31:26],
 		RegDst,
-		branch,
+		Branch,
 		MemRead,
 		MemtoReg,
 		ula_operation,
@@ -49,26 +49,20 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	i_mem current_instruction(nextPC, instruction);
 
 	// D_MEM MODULE
-	wire memWrite; //vem do controle
-	wire memRead;  //vem do controle
-	d_mem mips_d_mem(ula_result, ReadData2, data_mem, memWrite, memRead);
+	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead);
 
-	wire memToReg; //vem do controle
 	wire WriteData;
-	mux_32 mux_32_d_mem(data_mem, ula_result, memToReg, WriteData);
+	mux_32 mux_32_d_mem(data_mem, ula_result, MemtoReg, WriteData);
 
 	// MUX (i_mem e regfile)
-	wire RegDst; // Vem da Control
 	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
 
 	// MÓDULO REGFILE
 	wire [31:0] ReadData1, ReadData2;
-	wire RegWrite; // Vem da Control
 	regfile mips_regfile(instruction[25:21], instruction[20:16], ReadData1, ReadData2, clock, imem_mux_to_write_register, WriteData, RegWrite, reset);
 
 	// MUX (regfile e ula)
-	wire ALUsrc; // Vem da Control
-	mux_src mips_mux_src(ALUsrc, ReadData2, sign_extend_to_mux, In2);
+	mux_src mips_mux_src(ALUSrc, ReadData2, sign_extend_to_mux, In2);
 
 	//Sign extend from 16 to 32 bits
 	wire [31:0] sign_extend_to_mux;
@@ -78,9 +72,9 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	add32 branching(pc_increment, (sign_extend_to_mux << 2), add_branching_to_mux);
 	wire [31:0] add_branching_to_mux;
 
-	wire branch; //Saída do controle em caso de branching
+	wire Branch; //Saída do controle em caso de branching
 	wire branch_sel; //Atribuição em caso de branching do PC para outra instrução
-	assign branch_sel = branch & ula_zero_flag; //AND de branching
+	assign branch_sel = Branch & ula_zero_flag; //AND de branching
 	// Atribuição da próxima instrução do Program Counter (PC)
 	mux_32 pc_mux(pc_increment, add_branching_to_mux, branch_sel, pc);
 endmodule
