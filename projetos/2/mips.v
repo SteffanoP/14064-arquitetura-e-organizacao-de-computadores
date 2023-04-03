@@ -30,7 +30,7 @@ module mips(clock, reset, pc, ula_result, data_mem);
 		RegWrite
 	);
 
-	wire [1:0] ula_operation;
+	wire [2:0] ula_operation;
 	// MÓDULO ULA_CONTROL
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
 	// MÓDULO ULA
