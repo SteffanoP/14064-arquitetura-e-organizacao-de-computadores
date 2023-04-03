@@ -9,6 +9,7 @@
 `include "sign_extend.v"
 `include "utils.v"
 `include "d_mem.v"
+`include "branch.v"
 
 module mips(clock, reset, pc, ula_result, data_mem);
 	input wire clock, reset;
@@ -16,10 +17,11 @@ module mips(clock, reset, pc, ula_result, data_mem);
 
 	// CONTROL MODULE
 	wire RegDst, MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite;
+	wire [1:0] BranchOp;
 	control mips_control (
 		instruction[31:26],
 		RegDst,
-		Branch,
+		BranchOp,
 		MemRead,
 		MemtoReg,
 		ula_operation,
@@ -72,9 +74,9 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	add32 branching(pc_increment, (sign_extend_to_mux << 2), add_branching_to_mux);
 	wire [31:0] add_branching_to_mux;
 
-	wire Branch; //Saída do controle em caso de branching
-	wire branch_sel; //Atribuição em caso de branching do PC para outra instrução
-	assign branch_sel = Branch & ula_zero_flag; //AND de branching
+	branch beq_bne_selector(BranchOp, ula_zero_flag, Branch);
+	wire Branch; //Saída do módulo em caso de branching
+
 	// Atribuição da próxima instrução do Program Counter (PC)
-	mux_32 pc_mux(pc_increment, add_branching_to_mux, branch_sel, pc);
+	mux_32 pc_mux(pc_increment, add_branching_to_mux, Branch, pc);
 endmodule
