@@ -41,7 +41,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	ula mips_ula(ReadData1, In2, OP, ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
-	//wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
+	wire [31:0] pc;
 	PC pc_check(nextPC, pc, clock);
 
 	wire [31:0] pc_increment; // Representará o resultado da soma do valor do PC
@@ -51,7 +51,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	wire [31:0] instruction;
 	i_mem current_instruction(pc, instruction);
 
-	// D_MEM MODULE
+	// MÓDULO D_MEM
 	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead);
 
 	wire WriteData;
@@ -67,7 +67,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	// MUX (regfile e ula)
 	mux_src mips_mux_src(ALUSrc, ReadData2, sign_extend_to_mux, In2);
 
-	//Sign extend from 16 to 32 bits
+	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
 	sign_extend mips_sign_extend(instruction[15:0], sign_extend_to_mux);
 
