@@ -1,4 +1,4 @@
-`include "counter.v"
+`include "adder.v"
 `include "i_mem.v"
 `include "mux.v"
 `include "pc.v"
@@ -9,9 +9,9 @@
 `include "utils.v"
 `include "d_mem.v"
 
-module mips(clock, reset, pc, ula_result, data_mem);
+module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
-	output wire [31:0] pc, ula_result, data_mem;
+	output wire [31:0] nextPC, ula_result, data_mem;
 
 	wire [1:0] ula_operation;
 	// MÓDULO ULA_CONTROL
@@ -23,15 +23,15 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	ula mips_ula(In1, In2, OP, ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
-	wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
-	PC pc_check(pc, nextPC, clock);
+	//wire [31:0] nextPC; // conterá o próximo endereço (a atualização da soma)
+	PC pc_check(nextPC, pc, clock);
 
 	wire [31:0] pc_increment; // Representará o resultado da soma do valor do PC
-	Adder pc_counter(nextPC, pc_increment); // Módulo para atualizar o valor do PC
+	Adder pc_counter(pc, pc_increment); // Módulo para atualizar o valor do PC
 
 	// MÓDULO INSTRUÇÃO DE MEMÓRIA
 	wire [31:0] instruction;
-	i_mem current_instruction(nextPC, instruction);
+	i_mem current_instruction(pc, instruction);
 
 	// D_MEM MODULE
 	wire memWrite; //vem do controle
@@ -67,5 +67,5 @@ module mips(clock, reset, pc, ula_result, data_mem);
 	wire branch_sel; //Atribuição em caso de branching do PC para outra instrução
 	assign branch_sel = branch & ula_zero_flag; //AND de branching
 	// Atribuição da próxima instrução do Program Counter (PC)
-	mux_32 pc_mux(pc_increment, add_branching_to_mux, branch_sel, pc);
+	mux_32 pc_mux(pc_increment, add_branching_to_mux, branch_sel, nextPC);
 endmodule
