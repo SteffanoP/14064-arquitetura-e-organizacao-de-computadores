@@ -58,14 +58,14 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	mux_32 mux_32_d_mem(data_mem, ula_result, MemtoReg, WriteData);
 
 	// MUX (i_mem e regfile)
-	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
+	mux_5 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
 
 	// MÓDULO REGFILE
 	wire [31:0] ReadData1, ReadData2;
 	regfile mips_regfile(instruction[25:21], instruction[20:16], ReadData1, ReadData2, clock, imem_mux_to_write_register, WriteData, RegWrite, reset);
 
 	// MUX (regfile e ula)
-	mux_src mips_mux_src(ALUSrc, ReadData2, sign_extend_to_mux, In2);
+	mux_src mips_mux_src(ALUSrc, ReadData2, sign_extend_to_mux, regfile_mux_to_ula_In2);
 
 	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
