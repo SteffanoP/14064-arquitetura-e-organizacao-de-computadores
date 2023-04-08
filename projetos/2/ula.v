@@ -14,13 +14,15 @@ module ula(In1, In2, OP, shamt, result, Zero_flag);
 			4'b0000: ula_result <= In1 & In2; //0000: AND
 			4'b0001: ula_result <= In1 | In2; //0001: OR
 			4'b0010: ula_result <= In1 + In2; //0010: ADD
+			4'b0011: ula_result <= In2 << shamt; //0011: Shift left (SLL)
+			4'b0101: ula_result <= In2 >> shamt; //0101: Shift right (SRL e SRA)
 			4'b0110: ula_result <= In1 - In2; //0110: SUB
 			4'b0111: ula_result <= (In1 < In2) ? 32'd1 : 32'd0; //0111: SLT
 			4'b1011: ula_result <= {In2[15:0], 16'h0000}; //1011: LUI
 			4'b1100: ula_result <= ~ (In1 | In2); //1100: NOR
 			4'b1101: ula_result <= In1 ^ In2; //1101: XOR
-			4'b1110: ula_result <= In2 << shamt; //1110: Shift left
-			4'b1111: ula_result <= In2 >> shamt; //1111: Shift right
+			4'b1110: ula_result <= In2 << In1; //1110: SLLV
+			4'b1111: ula_result <= In2 >> In1; //1111: SRLV e SRAV
 			default: ula_result <= In1 + In2; //defaults to AND
 		endcase
 	end
