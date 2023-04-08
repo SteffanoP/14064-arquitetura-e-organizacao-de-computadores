@@ -35,10 +35,10 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	// MÓDULO ULA_CONTROL
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
 	// MÓDULO ULA
-	wire [31:0] In2;
+	wire [31:0] regfile_mux_to_ula_In2;
 	wire [3:0] OP;
 	wire ula_zero_flag;
-	ula mips_ula(ReadData1, In2, OP, instruction[10:6], ula_result, ula_zero_flag);
+	ula mips_ula(ReadData1, regfile_mux_to_ula_In2, OP, instruction[10:6], ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
 	wire [31:0] pc;
