@@ -38,7 +38,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	wire [31:0] In2;
 	wire [3:0] OP;
 	wire ula_zero_flag;
-	ula mips_ula(ReadData1, In2, OP, ula_result, ula_zero_flag);
+	ula mips_ula(ReadData1, In2, OP, instruction[10:6], ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
 	wire [31:0] pc;

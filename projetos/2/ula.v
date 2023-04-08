@@ -1,6 +1,7 @@
-module ula(In1, In2, OP, result, Zero_flag);
+module ula(In1, In2, OP, shamt, result, Zero_flag);
 	input wire [31:0] In1, In2;
 	input wire [3:0] OP;
+	input wire [4:0] shamt;
 	output wire [31:0] result;
 	output wire Zero_flag;
 
@@ -18,8 +19,8 @@ module ula(In1, In2, OP, result, Zero_flag);
 			4'b1011: ula_result <= {In2[15:0], 16'h0000}; //1011: LUI
 			4'b1100: ula_result <= ~ (In1 | In2); //1100: NOR
 			4'b1101: ula_result <= In1 ^ In2; //1101: XOR
-			4'b1110: ula_result <= In2 << In1; //1110: Shift left
-			4'b1111: ula_result <= In2 >> In1; //1111: Shift right
+			4'b1110: ula_result <= In2 << shamt; //1110: Shift left
+			4'b1111: ula_result <= In2 >> shamt; //1111: Shift right
 			default: ula_result <= In1 + In2; //defaults to AND
 		endcase
 	end
