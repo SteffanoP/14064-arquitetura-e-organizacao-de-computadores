@@ -12,6 +12,9 @@ module ula_control(ula_operation, func, operation);
                     6'b000100: operation <= 4'b1110; //SLLV
                     6'b000110: operation <= 4'b1111; //SRLV
                     6'b000111: operation <= 4'b1111; //SRAV
+                    6'b000011: operation <= 4'b0101; //SRA
+                    6'b000010: operation <= 4'b0101; //SRL
+                    6'b000000: operation <= 4'b0011; //SLL
                     6'b100000: operation <= 4'b0010; //add
                     6'b100010: operation <= 4'b0110; //sub
                     6'b100100: operation <= 4'b0000; //and

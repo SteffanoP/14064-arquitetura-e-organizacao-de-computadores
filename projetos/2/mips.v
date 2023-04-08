@@ -35,10 +35,10 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	// MÓDULO ULA_CONTROL
 	ula_control mips_ula_control(ula_operation, instruction[5:0], OP);
 	// MÓDULO ULA
-	wire [31:0] In2;
+	wire [31:0] regfile_mux_to_ula_In2;
 	wire [3:0] OP;
 	wire ula_zero_flag;
-	ula mips_ula(ReadData1, In2, OP, ula_result, ula_zero_flag);
+	ula mips_ula(ReadData1, regfile_mux_to_ula_In2, OP, instruction[10:6], ula_result, ula_zero_flag);
 	
 	// MÓDULO PC
 	wire [31:0] pc;
@@ -54,18 +54,19 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	// MÓDULO D_MEM
 	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead);
 
-	wire WriteData;
+	wire [31:0] WriteData;
 	mux_32 mux_32_d_mem(data_mem, ula_result, MemtoReg, WriteData);
 
 	// MUX (i_mem e regfile)
-	mux_4 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
+	wire [4:0] imem_mux_to_write_register;
+	mux_5 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
 
 	// MÓDULO REGFILE
 	wire [31:0] ReadData1, ReadData2;
 	regfile mips_regfile(instruction[25:21], instruction[20:16], ReadData1, ReadData2, clock, imem_mux_to_write_register, WriteData, RegWrite, reset);
 
 	// MUX (regfile e ula)
-	mux_32 regfile_mux(ReadData2, sign_extend_to_mux, ALUsrc, In2);
+	mux_32 regfile_mux(ReadData2, sign_extend_to_mux, ALUSrc, regfile_mux_to_ula_In2);
 
 	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
