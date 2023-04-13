@@ -9,7 +9,8 @@
 `include "sign_extend.v"
 `include "utils.v"
 `include "d_mem.v"
-`include "branch.v"
+`include "pc_source_control.v"
+`include "jump/jump.v"
 
 module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
@@ -17,11 +18,11 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 
 	// CONTROL MODULE
 	wire RegDst, MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite;
-	wire [1:0] BranchOp;
+	wire [1:0] PCOp;
 	control mips_control (
 		instruction[31:26],
 		RegDst,
-		BranchOp,
+		PCOp,
 		MemRead,
 		MemtoReg,
 		ula_operation,
@@ -76,9 +77,13 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	add32 branching(pc_increment, (sign_extend_to_mux << 2), add_branching_to_mux);
 	wire [31:0] add_branching_to_mux;
 
-	branch beq_bne_selector(BranchOp, ula_zero_flag, Branch);
-	wire Branch; //Saída do módulo em caso de branching
+	PCControl pc_control(PCOp, ula_zero_flag, PCSource);
+
+	//Módulo de JUMP
+	wire [31:0] jump_module_to_mux;
+	jump mips_jump(pc_increment[31:28], instruction[25:0], jump_module_to_mux);
 
 	// Atribuição da próxima instrução do Program Counter (PC)
-	mux_32 pc_mux(pc_increment, add_branching_to_mux, Branch, nextPC);
+	wire [1:0] PCSource; //Saída do módulo em caso de branching
+	mux_32_4 pc_mux (pc_increment, add_branching_to_mux, jump_module_to_mux, , PCSource, nextPC);
 endmodule
