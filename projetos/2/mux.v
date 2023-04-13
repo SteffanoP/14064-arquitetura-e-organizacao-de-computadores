@@ -8,6 +8,21 @@ module mux_32 (in1, in2, sel, out);
 	assign out = sel ? in1 : in2;
 endmodule
 
+module mux_32_4 (
+	in1,
+	in2,
+	in3,
+	in4,
+	sel,
+	out
+);
+	input wire [31:0] in1, in2, in3, in4;
+	input wire [1:0] sel;
+	output wire [31:0] out;
+
+	assign out = sel[1] ? (sel[0] ? in4 : in3) : (sel[0] ? in2 : in1);
+endmodule
+
 module mux_src(ALUsrc, ReadData2, SignExtended32, ALUin2);
 	// Declaração das entradas e saídas
 	input ALUsrc;
