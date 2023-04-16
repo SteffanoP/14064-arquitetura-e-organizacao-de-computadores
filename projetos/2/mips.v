@@ -70,7 +70,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	// MUX (Write Data)
 	// 0 => Vem de D_Mem
 	// 1 => Vem de JAL
-	wire [31:0] to_write_data_mux_input_2;
+	wire [31:0] to_write_data_mux_in2;
 	wire [31:0] to_write_data;
 	Adder jal (pc_increment, to_write_data_mux_in2);
 	mux_32 write_data_mux(WriteData, to_write_data_mux_in2, isJAL, to_write_data);
