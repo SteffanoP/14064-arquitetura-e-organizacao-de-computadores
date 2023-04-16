@@ -6,7 +6,7 @@ module jr_control(ula_opcode, func, JR_control);
     output reg JR_control;
 
     always @(*) begin
-        if ({ula_opcode, func} == 6'b001000) // Verifica se ula_opcode e func correspondem ao opcode da instrução jr (6'b001000)
+        if ({ula_opcode, func} == 6'b000000) // Verifica se ula_opcode e func correspondem ao opcode da instrução jr
 		    begin
             JR_control = 1'b1; // Se sim, define JR_control como 1
 			 end

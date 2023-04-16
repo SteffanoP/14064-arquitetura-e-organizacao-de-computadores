@@ -105,7 +105,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 
 	//Módulo de JR
 	wire [31:0] JR_control;
-	jr_control mips_jr_control(ula_operation, instruction, JR_control);
+	jr_control mips_jr_control(pc_increment, instruction[25:21], JR_control);
 
 	// Atribuição da próxima instrução do Program Counter (PC)
 	wire [1:0] PCSource; //Saída do módulo em caso de branching
