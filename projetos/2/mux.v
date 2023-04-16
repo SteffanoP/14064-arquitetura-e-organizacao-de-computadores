@@ -5,7 +5,7 @@ module mux_32 (in1, in2, sel, out);
 	output wire [31:0] out;
 
     //Determinação do multiplexador
-	assign out = sel ? in1 : in2;
+	assign out = sel ? in2 : in1;
 endmodule
 
 module mux_5(inst0, inst1, RegDst, imem_mux_to_write_register);
@@ -15,6 +15,6 @@ module mux_5(inst0, inst1, RegDst, imem_mux_to_write_register);
 	output wire [4:0] imem_mux_to_write_register;
 
 	// Determinação do multiplexador
-	assign imem_mux_to_write_register = (RegDst) ? inst0 : inst1;
+	assign imem_mux_to_write_register = (RegDst) ? inst1 : inst0;
 
 endmodule
