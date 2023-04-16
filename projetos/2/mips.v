@@ -7,6 +7,7 @@
 `include "control/control.v"
 `include "jump/jump.v"
 `include "utils/utils.v"
+`include "control/jr_control.v"
 
 module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
@@ -101,6 +102,10 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	//Módulo de JUMP
 	wire [31:0] jump_module_to_mux;
 	jump mips_jump(pc_increment[31:28], instruction[25:0], jump_module_to_mux);
+
+	//Módulo de JR
+	wire [31:0] JR_control;
+	jr_control mips_jr_control(ula_operation, instruction, JR_control);
 
 	// Atribuição da próxima instrução do Program Counter (PC)
 	wire [1:0] PCSource; //Saída do módulo em caso de branching

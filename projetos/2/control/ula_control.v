@@ -20,7 +20,6 @@ module ula_control(ula_operation, func, operation);
                     6'b100111: operation <= 4'b1100; //nor
                     6'b101010: operation <= 4'b0111; //SLT
                     6'b101011: operation <= 4'b0111; //SLTU
-                    6'b001000: operation <= 4'b0011; //jr
                     default: operation <= 4'b0000; //defaults to AND
                 endcase
             3'b011: operation <= 4'b0111; //slti
