@@ -1,4 +1,4 @@
-`include "adder.v"
+`include "utils/adder.v"
 `include "i_mem.v"
 `include "mux.v"
 `include "pc.v"
