@@ -1,16 +1,12 @@
-`include "utils/adder.v"
 `include "i_mem.v"
-`include "mux.v"
 `include "pc.v"
 `include "regfile.v"
-`include "control.v"
 `include "ula.v"
-`include "ula_control.v"
 `include "sign_extend.v"
-`include "utils.v"
 `include "d_mem.v"
-`include "pc_source_control.v"
+`include "control/control.v"
 `include "jump/jump.v"
+`include "utils/utils.v"
 
 module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
