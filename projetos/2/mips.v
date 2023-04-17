@@ -55,7 +55,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead);
 
 	wire [31:0] WriteData;
-	mux_32 mux_32_d_mem(data_mem, ula_result, MemtoReg, WriteData);
+	mux_32 mux_32_d_mem(ula_result, data_mem, MemtoReg, WriteData);
 
 	// MUX (i_mem e regfile)
 	wire [4:0] imem_mux_to_write_register;
