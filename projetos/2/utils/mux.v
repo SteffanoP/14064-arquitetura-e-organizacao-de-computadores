@@ -22,6 +22,7 @@ module mux_32_4 (
 
 	assign out = sel[1] ? (sel[0] ? in4 : in3) : (sel[0] ? in2 : in1);
 endmodule
+// mux_32_4 pc_mux (pc_increment, add_branching_to_mux, jump_module_to_mux, jr_PC, PCSource, nextPC);
 
 module mux_src(ALUsrc, ReadData2, SignExtended32, ALUin2);
 	// Declaração das entradas e saídas
