@@ -103,11 +103,11 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	wire [31:0] jump_module_to_mux;
 	jump mips_jump(pc_increment[31:28], instruction[25:0], jump_module_to_mux);
 
-	//Módulo de JR
-	wire [31:0] new_pc;
-	jr_control mips_jr_control(pc_increment, instruction[25:21], new_pc);
+	//Módulo de Controle de JR
+	wire [31:0] jr_PC;
+	jr_control mips_jr_control(ula_operation, instruction[5:0], ReadData1, jr_PC);
 
 	// Atribuição da próxima instrução do Program Counter (PC)
 	wire [1:0] PCSource; //Saída do módulo em caso de branching
-	mux_32_4 pc_mux (pc_increment, add_branching_to_mux, jump_module_to_mux, , PCSource, nextPC);
+	mux_32_4 pc_mux (pc_increment, add_branching_to_mux, jump_module_to_mux, jr_PC, PCSource, nextPC);
 endmodule
