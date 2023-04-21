@@ -15,9 +15,10 @@ module ula(In1, In2, OP, shamt, result, Zero_flag);
 			4'b0001: ula_result <= In1 | In2; //0001: OR
 			4'b0010: ula_result <= In1 + In2; //0010: ADD
 			4'b0011: ula_result <= In2 << shamt; //0011: Shift left (SLL)
-			4'b0101: ula_result <= In2 >> shamt; //0101: Shift right (SRL e SRA)
+			4'b0100: ula_result <= $signed($signed(In2) >>> shamt); //0100: Shift right arithmetic (SRA)
+			4'b0101: ula_result <= In2 >> shamt; //0101: Shift right logical (SRL)
 			4'b0110: ula_result <= In1 - In2; //0110: SUB
-			4'b0111: ula_result <= (In1 < In2) ? 32'd1 : 32'd0; //0111: SLT
+			4'b0111: ula_result <= ($signed(In1) < $signed(In2)) ? 32'd1 : 32'd0; //0111: SLT
 			4'b1011: ula_result <= {In2[15:0], 16'h0000}; //1011: LUI
 			4'b1100: ula_result <= ~ (In1 | In2); //1100: NOR
 			4'b1101: ula_result <= In1 ^ In2; //1101: XOR
