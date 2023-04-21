@@ -52,7 +52,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	i_mem current_instruction(pc, instruction);
 
 	// MÓDULO D_MEM
-	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead);
+	d_mem mips_d_mem(ula_result, ReadData2, data_mem, MemWrite, MemRead, clock);
 
 	wire [31:0] WriteData;
 	mux_32 mux_32_d_mem(ula_result, data_mem, MemtoReg, WriteData);
