@@ -13,7 +13,7 @@ module i_mem (address, i_out);
     // Inicializando o arquivo com as instruções MIPS
     // TODO: Completar arquivo com mais instruções
     initial begin
-        $readmemb("tests/steffano_tests.list", rom_mem);
+        $readmemb("tests/instruction.list", rom_mem);
     end
 
     // Leitura assíncrona. Apenas o address é considerado no always.
