@@ -12,11 +12,10 @@ module control (
     MemWrite,
     ALUSrc,
     RegWrite,
-    Jump,
     isJAL
 );
     input wire [5:0] opcode;
-    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, Jump, isJAL;
+    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
     output reg [1:0] PCOp, RegDst;
     output reg [2:0] ALUOp;
 
@@ -26,7 +25,6 @@ module control (
                 RegDst = 2'b01;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b010;
                 MemWrite = 1'b0;
@@ -38,7 +36,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b10;
                 MemRead = 1'b0;
-                Jump = 1'b1;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
                 MemWrite = 1'b0;
@@ -50,7 +47,6 @@ module control (
                 RegDst = 2'b10;
                 PCOp = 2'b10;
                 MemRead = 1'b0;
-                Jump = 1'b1;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
                 MemWrite = 1'b0;
@@ -62,7 +58,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
                 MemWrite = 1'b0;
@@ -74,7 +69,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b011;
                 MemWrite = 1'b0;
@@ -86,7 +80,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b100;
                 MemWrite = 1'b0;
@@ -98,7 +91,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b101;
                 MemWrite = 1'b0;
@@ -110,7 +102,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b110;
                 MemWrite = 1'b0;
@@ -122,7 +113,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b111;
                 MemWrite = 1'b0;
@@ -134,7 +124,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b1;
-                Jump = 1'b0;
                 MemtoReg = 1'b1;
                 ALUOp = 3'b000;
                 MemWrite = 1'b0;
@@ -146,7 +135,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
                 MemWrite = 1'b1;
@@ -158,7 +146,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b01;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b001;
                 MemWrite = 1'b0;
@@ -170,7 +157,6 @@ module control (
                 RegDst = 2'b00;
                 PCOp = 2'b10;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b001;
                 MemWrite = 1'b0;
@@ -182,7 +168,6 @@ module control (
                 RegDst = 1'b0;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
-                Jump = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
                 MemWrite = 1'b0;

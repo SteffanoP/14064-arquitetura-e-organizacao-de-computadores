@@ -13,7 +13,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	output wire [31:0] nextPC, ula_result, data_mem;
 
 	// CONTROL MODULE
-	wire MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, Jump, isJAL;
+	wire MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
 	wire [1:0] PCOp, RegDst;
 	control mips_control (
 		instruction[31:26],
@@ -25,7 +25,6 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 		MemWrite,
 		ALUSrc,
 		RegWrite,
-		Jump,
 		isJAL
 	);
 
