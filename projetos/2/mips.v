@@ -7,7 +7,6 @@
 `include "control/control.v"
 `include "jump/jump.v"
 `include "utils/utils.v"
-`include "control/jr_control.v"
 
 module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
