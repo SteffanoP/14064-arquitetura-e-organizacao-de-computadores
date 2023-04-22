@@ -1,33 +1,31 @@
-`include "adder.v"
 `include "i_mem.v"
-`include "mux.v"
 `include "pc.v"
 `include "regfile.v"
-`include "control.v"
 `include "ula.v"
-`include "ula_control.v"
 `include "sign_extend.v"
-`include "utils.v"
 `include "d_mem.v"
-`include "branch.v"
+`include "control/control.v"
+`include "jump/jump.v"
+`include "utils/utils.v"
 
 module mips(clock, reset, nextPC, ula_result, data_mem);
 	input wire clock, reset;
 	output wire [31:0] nextPC, ula_result, data_mem;
 
 	// CONTROL MODULE
-	wire RegDst, MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite;
-	wire [1:0] BranchOp;
+	wire MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
+	wire [1:0] PCOp, RegDst;
 	control mips_control (
 		instruction[31:26],
 		RegDst,
-		BranchOp,
+		PCOp,
 		MemRead,
 		MemtoReg,
 		ula_operation,
 		MemWrite,
 		ALUSrc,
-		RegWrite
+		RegWrite,
+		isJAL
 	);
 
 	wire [2:0] ula_operation;
@@ -58,12 +56,33 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	mux_32 mux_32_d_mem(data_mem, ula_result, MemtoReg, WriteData);
 
 	// MUX (i_mem e regfile)
+	// 00 => RT (instrução tipo I)
+	// 01 => RD (instrução tipo R)
+	// 10 => 31 ($ra => para jal)
 	wire [4:0] imem_mux_to_write_register;
-	mux_5 imem_reg_mux(instruction[20:16], instruction[15:11], RegDst, imem_mux_to_write_register);
+	mux_5_4 imem_reg_mux(instruction[20:16], instruction[15:11], 5'b11111, ,RegDst, imem_mux_to_write_register);
+
+	// MUX (Write Data)
+	// 0 => Vem de D_Mem
+	// 1 => Vem de JAL
+	wire [31:0] to_write_data_mux_in2;
+	wire [31:0] to_write_data;
+	Adder jal (pc_increment, to_write_data_mux_in2);
+	mux_32 write_data_mux(WriteData, to_write_data_mux_in2, isJAL, to_write_data);
 
 	// MÓDULO REGFILE
 	wire [31:0] ReadData1, ReadData2;
-	regfile mips_regfile(instruction[25:21], instruction[20:16], ReadData1, ReadData2, clock, imem_mux_to_write_register, WriteData, RegWrite, reset);
+	regfile mips_regfile(
+		instruction[25:21], 
+		instruction[20:16], 
+		ReadData1, 
+		ReadData2, 
+		clock, 
+		imem_mux_to_write_register, 
+		to_write_data, 
+		RegWrite, 
+		reset
+	);
 
 	// MUX (regfile e ula)
 	mux_32 regfile_mux(ReadData2, sign_extend_to_mux, ALUSrc, regfile_mux_to_ula_In2);
@@ -76,9 +95,17 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	add32 branching(pc_increment, (sign_extend_to_mux << 2), add_branching_to_mux);
 	wire [31:0] add_branching_to_mux;
 
-	branch beq_bne_selector(BranchOp, ula_zero_flag, Branch);
-	wire Branch; //Saída do módulo em caso de branching
+	PCControl pc_control(PCOp, ula_zero_flag, PCSource);
+
+	//Módulo de JUMP
+	wire [31:0] jump_module_to_mux;
+	jump mips_jump(pc_increment[31:28], instruction[25:0], jump_module_to_mux);
+
+	//Módulo de Controle de JR
+	wire [31:0] jr_PC;
+	jr_control mips_jr_control(ula_operation, instruction[5:0], ReadData1, jr_PC);
 
 	// Atribuição da próxima instrução do Program Counter (PC)
-	mux_32 pc_mux(pc_increment, add_branching_to_mux, Branch, nextPC);
+	wire [1:0] PCSource; //Saída do módulo em caso de branching
+	mux_32_4 pc_mux (pc_increment, add_branching_to_mux, jump_module_to_mux, jr_PC, PCSource, nextPC);
 endmodule
