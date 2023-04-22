@@ -34,7 +34,7 @@ module control (
             end
             6'b000010: begin //j
                 RegDst = 2'b00;
-                PCOp = 2'b10;
+                PCOp = 2'b11;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
@@ -45,7 +45,7 @@ module control (
             end
             6'b000011: begin //jal
                 RegDst = 2'b10;
-                PCOp = 2'b10;
+                PCOp = 2'b11;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
                 ALUOp = 3'b000;
