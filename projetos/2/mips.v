@@ -13,7 +13,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 	output wire [31:0] nextPC, ula_result, data_mem;
 
 	// CONTROL MODULE
-	wire MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
+	wire MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL, isSigned;
 	wire [1:0] PCOp, RegDst;
 	control mips_control (
 		instruction[31:26],
@@ -25,7 +25,8 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 		MemWrite,
 		ALUSrc,
 		RegWrite,
-		isJAL
+		isJAL,
+		isSigned
 	);
 
 	wire [2:0] ula_operation;
@@ -89,7 +90,7 @@ module mips(clock, reset, nextPC, ula_result, data_mem);
 
 	//Sign extend de 16 para 32 bits
 	wire [31:0] sign_extend_to_mux;
-	sign_extend mips_sign_extend(instruction[15:0], sign_extend_to_mux);
+	sign_extend mips_sign_extend(instruction[15:0], isSigned, sign_extend_to_mux);
 
 	//Somador para branching
 	add32 branching(pc_increment, (sign_extend_to_mux << 2), add_branching_to_mux);

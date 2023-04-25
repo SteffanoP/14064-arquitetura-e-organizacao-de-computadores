@@ -12,10 +12,11 @@ module control (
     MemWrite,
     ALUSrc,
     RegWrite,
-    isJAL
+    isJAL,
+    isSigned
 );
     input wire [5:0] opcode;
-    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
+    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL, isSigned;
     output reg [1:0] PCOp, RegDst;
     output reg [4:0] ALUOp;
 
@@ -31,6 +32,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000010: begin //j
                 RegDst = 2'b00;
@@ -42,6 +44,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000011: begin //jal
                 RegDst = 2'b10;
@@ -53,6 +56,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b1;
                 isJAL = 1'b1;
+                isSigned = 1'b1;
             end
             6'b001000: begin //addi
                 RegDst = 2'b00;
@@ -64,6 +68,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b001010: begin //slti
                 RegDst = 2'b00;
@@ -75,6 +80,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b001011: begin //sltiu
                 RegDst = 2'b00;
@@ -86,6 +92,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b001100: begin //andi
                 RegDst = 2'b00;
@@ -97,6 +104,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001101: begin //ori
                 RegDst = 2'b00;
@@ -108,6 +116,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001110: begin //xori
                 RegDst = 2'b00;
@@ -119,6 +128,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001111: begin //lui
                 RegDst = 2'b00;
@@ -130,6 +140,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b100011: begin //lw
                 RegDst = 2'b00;
@@ -141,6 +152,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b101011: begin //sw
                 RegDst = 2'b00;
@@ -152,6 +164,7 @@ module control (
                 ALUSrc = 1'b1;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000100: begin //beq
                 RegDst = 2'b00;
@@ -163,6 +176,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000101: begin //bne
                 RegDst = 2'b00;
@@ -174,6 +188,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             default: begin //does nothing :)
                 RegDst = 1'b0;
@@ -185,6 +200,7 @@ module control (
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
         endcase
     end
