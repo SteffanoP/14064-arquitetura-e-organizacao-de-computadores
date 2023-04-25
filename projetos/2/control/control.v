@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 `include "jr_control.v"
 `include "pc_source_control.v"
 `include "ula_control.v"
@@ -12,12 +21,13 @@ module control (
     MemWrite,
     ALUSrc,
     RegWrite,
-    isJAL
+    isJAL,
+    isSigned
 );
     input wire [5:0] opcode;
-    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL;
+    output reg MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, isJAL, isSigned;
     output reg [1:0] PCOp, RegDst;
-    output reg [2:0] ALUOp;
+    output reg [4:0] ALUOp;
 
     always @(opcode) begin
         case (opcode)
@@ -26,154 +36,180 @@ module control (
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b010;
+                ALUOp = 4'b0010;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000010: begin //j
                 RegDst = 2'b00;
-                PCOp = 2'b10;
+                PCOp = 2'b11;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000011: begin //jal
                 RegDst = 2'b10;
-                PCOp = 2'b10;
+                PCOp = 2'b11;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b1;
                 isJAL = 1'b1;
+                isSigned = 1'b1;
             end
             6'b001000: begin //addi
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b001010: begin //slti
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b011;
+                ALUOp = 4'b0011;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
+            end
+            6'b001011: begin //sltiu
+                RegDst = 2'b00;
+                PCOp = 2'b00;
+                MemRead = 1'b0;
+                MemtoReg = 1'b0;
+                ALUOp = 4'b1000;
+                MemWrite = 1'b0;
+                ALUSrc = 1'b1;
+                RegWrite = 1'b1;
+                isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b001100: begin //andi
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b100;
+                ALUOp = 4'b0100;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001101: begin //ori
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b101;
+                ALUOp = 4'b0101;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001110: begin //xori
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b110;
+                ALUOp = 4'b0110;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b001111: begin //lui
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b111;
+                ALUOp = 4'b0111;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
             6'b100011: begin //lw
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b1;
                 MemtoReg = 1'b1;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b1;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b101011: begin //sw
                 RegDst = 2'b00;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b1;
                 ALUSrc = 1'b1;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000100: begin //beq
                 RegDst = 2'b00;
                 PCOp = 2'b01;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b001;
+                ALUOp = 4'b0001;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             6'b000101: begin //bne
                 RegDst = 2'b00;
                 PCOp = 2'b10;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b001;
+                ALUOp = 4'b0001;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b1;
             end
             default: begin //does nothing :)
                 RegDst = 1'b0;
                 PCOp = 2'b00;
                 MemRead = 1'b0;
                 MemtoReg = 1'b0;
-                ALUOp = 3'b000;
+                ALUOp = 4'b0000;
                 MemWrite = 1'b0;
                 ALUSrc = 1'b0;
                 RegWrite = 1'b0;
                 isJAL = 1'b0;
+                isSigned = 1'b0;
             end
         endcase
     end

@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 module Adder(pc, pc_increment);
 	// Declaração de entrada e saída
 	input [31:0] pc;

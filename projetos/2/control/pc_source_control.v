@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 module PCControl (
     PCSource,
     ZeroFlag,
@@ -9,10 +18,10 @@ module PCControl (
 
     always @(*) begin
         case (PCSource)
-            2'b00: Source <= 2'b00;
-            2'b01: Source <= {1'b0,ZeroFlag};
-            2'b10: Source <= 2'b10;
-            default: Source <= 2'b00;
+            2'b00: Source <= 2'b00; //PC + 4
+            2'b01: Source <= {1'b0,ZeroFlag}; //BEQ
+            2'b10: Source <= {1'b0,!ZeroFlag}; //BNE
+            2'b11: Source <= 2'b10; //J and JAL PC Sourcing
         endcase
     end
 endmodule
