@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 module ula(In1, In2, OP, shamt, result, Zero_flag);
 	input wire [31:0] In1, In2;
 	input wire [3:0] OP;

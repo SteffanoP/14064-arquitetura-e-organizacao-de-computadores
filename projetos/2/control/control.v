@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 `include "jr_control.v"
 `include "pc_source_control.v"
 `include "ula_control.v"

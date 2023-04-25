@@ -1,3 +1,12 @@
+// Universidade Federal Rural de Pernambuco
+// 2021.2
+// Arquitetura e Organização de Computadores - 2ªVA
+// Alunos:
+// Steffano Pereira
+// Haga Fedra
+// João Carvalho
+// Julyanne Correia
+// -----------------------------
 module mux_32 (in1, in2, sel, out);
     // Declaração de entradas e saídas
 	input wire [31:0] in1, in2;
